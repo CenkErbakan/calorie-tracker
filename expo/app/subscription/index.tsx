@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { Crown, Check, RefreshCw, Settings2, ArrowRight } from 'lucide-react-native';
+import { Crown, Check, RefreshCw, Settings2, ArrowRight, ChevronLeft } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { formatDate } from '@/lib/dateUtils';
 
@@ -94,6 +94,16 @@ export default function SubscriptionScreen() {
       <LinearGradient colors={[Colors.background, Colors.surface]} style={styles.gradient} />
 
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.back();
+          }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <ChevronLeft size={24} color={Colors.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('subscription')}</Text>
       </View>
 
@@ -190,13 +200,20 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
   },
+  backBtn: {
+    padding: Spacing.sm,
+    marginRight: Spacing.sm,
+  },
   headerTitle: {
     ...Typography.h1,
     color: Colors.text,
+    flex: 1,
   },
   scrollView: {
     flex: 1,

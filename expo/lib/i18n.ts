@@ -233,6 +233,39 @@ const trTranslations = {
   discardConfirm: 'Değişiklikler kaybolacak. Devam etmek istiyor musunuz?',
   captureWithCamera: 'Kamerayla yemek fotoğrafı çekin',
   selectExisting: 'Galeriden fotoğraf seçin',
+
+  // Diet Program (Premium)
+  diet: 'Diyet',
+  dietProgram: 'Diyet Programı',
+  dietProgramDesc: 'AI destekli kişiselleştirilmiş diyet planı',
+  dietPremiumOnly: 'Diyet programı Premium özelliğidir',
+  dietStep0Title: 'Kaç kilo vermek istiyorsunuz?',
+  dietStep0Subtitle: 'Mevcut kilonuz: {weight} kg',
+  dietStep1Title: 'Ayda kaç kilo vermek istiyorsunuz?',
+  dietStep1Subtitle: 'Hız seçin - yavaş daha sürdürülebilir',
+  dietSpeedSlow: 'Yavaş',
+  dietSpeedSlowDesc: 'Sağlıklı ve sürdürülebilir',
+  dietSpeedMedium: 'Orta',
+  dietSpeedMediumDesc: 'Dengeli ilerleme',
+  dietSpeedFast: 'Hızlı',
+  dietSpeedFastDesc: 'Hızlı sonuç',
+  dietMonths: 'ay',
+  dietStep2Title: 'Alerjiniz var mı?',
+  dietStep2Subtitle: 'Kaçınmamız gereken besinleri ekleyin',
+  dietAllergyPlaceholder: 'Örn: fındık, süt...',
+  dietStep3Title: 'Yemeyi sevmediğiniz şeyler?',
+  dietStep3Subtitle: 'Listeye ekleyin, diyete dahil etmeyelim',
+  dietDislikedPlaceholder: 'Örn: patlıcan, karaciğer...',
+  dietGenerate: 'Diyet Oluştur',
+  dietPlan: 'Diyet Planım',
+  dietDay: 'Gün',
+  dietDailyTotal: 'Günlük Toplam',
+  dietNoPlan: 'Henüz diyet planı yok',
+  dietEnterWeightToLose: 'Lütfen vermek istediğiniz kilo miktarını girin',
+  dietCreateNew: 'Yeni Plan Oluştur',
+
+  // Water
+  waterIntake: 'Su Tüketimi',
 } as const;
 
 // English translations
@@ -463,6 +496,39 @@ const enTranslations = {
   discardConfirm: 'Your changes will be lost. Are you sure you want to continue?',
   captureWithCamera: 'Capture your meal with camera',
   selectExisting: 'Select an existing photo',
+
+  // Diet Program (Premium)
+  diet: 'Diet',
+  dietProgram: 'Diet Program',
+  dietProgramDesc: 'AI-powered personalized diet plan',
+  dietPremiumOnly: 'Diet program is a Premium feature',
+  dietStep0Title: 'How much weight do you want to lose?',
+  dietStep0Subtitle: 'Your current weight: {weight} kg',
+  dietStep1Title: 'How much per month?',
+  dietStep1Subtitle: 'Choose your pace - slower is more sustainable',
+  dietSpeedSlow: 'Slow',
+  dietSpeedSlowDesc: 'Healthy and sustainable',
+  dietSpeedMedium: 'Medium',
+  dietSpeedMediumDesc: 'Balanced progress',
+  dietSpeedFast: 'Fast',
+  dietSpeedFastDesc: 'Faster results',
+  dietMonths: 'months',
+  dietStep2Title: 'Any allergies?',
+  dietStep2Subtitle: 'Add foods we should avoid',
+  dietAllergyPlaceholder: 'e.g. nuts, dairy...',
+  dietStep3Title: 'Foods you dislike?',
+  dietStep3Subtitle: 'Add to list, we won\'t include them',
+  dietDislikedPlaceholder: 'e.g. eggplant, liver...',
+  dietGenerate: 'Generate Diet',
+  dietPlan: 'My Diet Plan',
+  dietDay: 'Day',
+  dietDailyTotal: 'Daily Total',
+  dietNoPlan: 'No diet plan yet',
+  dietEnterWeightToLose: 'Please enter how many kg you want to lose',
+  dietCreateNew: 'Create New Plan',
+
+  // Water
+  waterIntake: 'Water Intake',
 } as const;
 
 type Translations = typeof enTranslations;

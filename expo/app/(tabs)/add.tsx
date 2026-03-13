@@ -33,6 +33,11 @@ import {
   Sparkles,
 } from 'lucide-react-native';
 
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+// Manuel ekleme için placeholder (1x1 şeffaf PNG)
+const PLACEHOLDER_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
 // Reset state when screen is focused
 export default function AddMealScreen() {
   const insets = useSafeAreaInsets();
@@ -151,7 +156,25 @@ export default function AddMealScreen() {
 
     try {
       const data = await analyzePhoto(photoUri);
-      setNutritionData(data);
+      const rounded = {
+        ...data,
+        total_protein_grams: round1(data.total_protein_grams),
+        total_carbs_grams: round1(data.total_carbs_grams),
+        total_fat_grams: round1(data.total_fat_grams),
+        ingredients: data.ingredients.map((ing) => ({
+          ...ing,
+          calories: Math.round(ing.calories),
+          protein_grams: round1(ing.protein_grams),
+          carbs_grams: round1(ing.carbs_grams),
+          fat_grams: round1(ing.fat_grams),
+          original_weight_grams: ing.original_weight_grams ?? ing.weight_grams,
+          original_calories: ing.original_calories ?? ing.calories,
+          original_protein_grams: ing.original_protein_grams ?? ing.protein_grams,
+          original_carbs_grams: ing.original_carbs_grams ?? ing.carbs_grams,
+          original_fat_grams: ing.original_fat_grams ?? ing.fat_grams,
+        })),
+      };
+      setNutritionData(rounded);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setStep('edit');
     } catch (err) {
@@ -178,6 +201,31 @@ export default function AddMealScreen() {
     setStep('select');
   };
 
+  const handleManualAdd = () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPhotoUri(PLACEHOLDER_IMAGE_URI);
+    setNutritionData({
+      meal_name: '',
+      meal_type: 'lunch',
+      ingredients: [
+        {
+          name: '',
+          weight_grams: 0,
+          calories: 0,
+          protein_grams: 0,
+          carbs_grams: 0,
+          fat_grams: 0,
+        },
+      ],
+      total_calories: 0,
+      total_protein_grams: 0,
+      total_carbs_grams: 0,
+      total_fat_grams: 0,
+    });
+    setError(null);
+    setStep('edit');
+  };
+
   // Auto-recalculate when weight changes
   const handleWeightChange = (index: number, newWeight: string) => {
     if (!nutritionData) return;
@@ -186,26 +234,32 @@ export default function AddMealScreen() {
     const ingredient = nutritionData.ingredients[index];
     if (!ingredient) return;
 
-    // Get original values
     const origWeight = ingredient.original_weight_grams ?? ingredient.weight_grams;
     const origCalories = ingredient.original_calories ?? ingredient.calories;
     const origProtein = ingredient.original_protein_grams ?? ingredient.protein_grams;
     const origCarbs = ingredient.original_carbs_grams ?? ingredient.carbs_grams;
     const origFat = ingredient.original_fat_grams ?? ingredient.fat_grams;
 
-    if (origWeight === 0) return;
-
-    const ratio = weightNum / origWeight;
-
     const updatedIngredients = [...nutritionData.ingredients];
-    updatedIngredients[index] = {
-      ...ingredient,
-      weight_grams: weightNum,
-      calories: Math.round(origCalories * ratio),
-      protein_grams: Math.round(origProtein * ratio),
-      carbs_grams: Math.round(origCarbs * ratio),
-      fat_grams: Math.round(origFat * ratio),
-    };
+
+    if (origWeight === 0) {
+      // Manuel giriş: sadece ağırlığı güncelle
+      updatedIngredients[index] = {
+        ...ingredient,
+        weight_grams: weightNum,
+        original_weight_grams: weightNum,
+      };
+    } else {
+      const ratio = weightNum / origWeight;
+      updatedIngredients[index] = {
+        ...ingredient,
+        weight_grams: weightNum,
+        calories: Math.round(origCalories * ratio),
+        protein_grams: round1(origProtein * ratio),
+        carbs_grams: round1(origCarbs * ratio),
+        fat_grams: round1(origFat * ratio),
+      };
+    }
 
     recalculateTotals(updatedIngredients);
   };
@@ -219,18 +273,25 @@ export default function AddMealScreen() {
     if (!ingredient) return;
 
     const origCalories = ingredient.original_calories ?? ingredient.calories;
-    if (origCalories === 0) return;
-
-    const ratio = calNum / origCalories;
-
     const updatedIngredients = [...nutritionData.ingredients];
-    updatedIngredients[index] = {
-      ...ingredient,
-      calories: calNum,
-      protein_grams: Math.round((ingredient.original_protein_grams ?? ingredient.protein_grams) * ratio),
-      carbs_grams: Math.round((ingredient.original_carbs_grams ?? ingredient.carbs_grams) * ratio),
-      fat_grams: Math.round((ingredient.original_fat_grams ?? ingredient.fat_grams) * ratio),
-    };
+
+    if (origCalories === 0) {
+      // Manuel giriş: sadece kaloriyi güncelle
+      updatedIngredients[index] = {
+        ...ingredient,
+        calories: calNum,
+        original_calories: calNum,
+      };
+    } else {
+      const ratio = calNum / origCalories;
+      updatedIngredients[index] = {
+        ...ingredient,
+        calories: calNum,
+        protein_grams: round1((ingredient.original_protein_grams ?? ingredient.protein_grams) * ratio),
+        carbs_grams: round1((ingredient.original_carbs_grams ?? ingredient.carbs_grams) * ratio),
+        fat_grams: round1((ingredient.original_fat_grams ?? ingredient.fat_grams) * ratio),
+      };
+    }
 
     recalculateTotals(updatedIngredients);
   };
@@ -251,10 +312,10 @@ export default function AddMealScreen() {
     setNutritionData({
       ...nutritionData,
       ingredients,
-      total_calories: totals.calories,
-      total_protein_grams: totals.protein,
-      total_carbs_grams: totals.carbs,
-      total_fat_grams: totals.fat,
+      total_calories: Math.round(totals.calories),
+      total_protein_grams: round1(totals.protein),
+      total_carbs_grams: round1(totals.carbs),
+      total_fat_grams: round1(totals.fat),
     });
   };
 
@@ -262,9 +323,10 @@ export default function AddMealScreen() {
     if (!nutritionData) return;
 
     const updatedIngredients = [...nutritionData.ingredients];
+    const numVal = parseFloat(value) || 0;
     updatedIngredients[index] = {
       ...updatedIngredients[index],
-      [field]: field === 'name' ? value : parseFloat(value) || 0,
+      [field]: field === 'name' ? value : round1(numVal),
     };
 
     setNutritionData({ ...nutritionData, ingredients: updatedIngredients });
@@ -384,7 +446,7 @@ export default function AddMealScreen() {
               <Text style={styles.optionSubtitle}>{t('selectExisting')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.manualButton}>
+            <TouchableOpacity style={styles.manualButton} onPress={handleManualAdd}>
               <Text style={styles.manualButtonText}>{t('orAddManually')}</Text>
             </TouchableOpacity>
           </View>
@@ -464,6 +526,7 @@ export default function AddMealScreen() {
                         styles.mealTypeText,
                         nutritionData.meal_type === type && styles.mealTypeTextActive,
                       ]}
+                      numberOfLines={1}
                     >
                       {t(type)}
                     </Text>
@@ -519,7 +582,7 @@ export default function AddMealScreen() {
                         style={styles.tableCellNum}
                         value={ingredient.weight_grams ? String(ingredient.weight_grams) : ''}
                         onChangeText={(text) => handleWeightChange(index, text)}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         placeholder={t('weightPlaceholder')}
                         placeholderTextColor={Colors.textTertiary}
                       />
@@ -527,31 +590,31 @@ export default function AddMealScreen() {
                         style={styles.tableCellNum}
                         value={ingredient.calories ? String(ingredient.calories) : ''}
                         onChangeText={(text) => handleCaloriesChange(index, text)}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         placeholder={t('caloriesPlaceholder')}
                         placeholderTextColor={Colors.textTertiary}
                       />
                       <TextInput
                         style={styles.tableCellNum}
-                        value={ingredient.protein_grams ? String(ingredient.protein_grams) : ''}
+                        value={ingredient.protein_grams !== 0 && ingredient.protein_grams ? String(ingredient.protein_grams) : ''}
                         onChangeText={(text) => updateIngredientField(index, 'protein_grams', text)}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         placeholder="0"
                         placeholderTextColor={Colors.textTertiary}
                       />
                       <TextInput
                         style={styles.tableCellNum}
-                        value={ingredient.carbs_grams ? String(ingredient.carbs_grams) : ''}
+                        value={ingredient.carbs_grams !== 0 && ingredient.carbs_grams ? String(ingredient.carbs_grams) : ''}
                         onChangeText={(text) => updateIngredientField(index, 'carbs_grams', text)}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         placeholder="0"
                         placeholderTextColor={Colors.textTertiary}
                       />
                       <TextInput
                         style={styles.tableCellNum}
-                        value={ingredient.fat_grams ? String(ingredient.fat_grams) : ''}
+                        value={ingredient.fat_grams !== 0 && ingredient.fat_grams ? String(ingredient.fat_grams) : ''}
                         onChangeText={(text) => updateIngredientField(index, 'fat_grams', text)}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         placeholder="0"
                         placeholderTextColor={Colors.textTertiary}
                       />
@@ -632,7 +695,7 @@ function MacroTotal({
 }) {
   return (
     <View style={styles.macroTotal}>
-      <Text style={[styles.macroTotalValue, { color }]}>{value}g</Text>
+      <Text style={[styles.macroTotalValue, { color }]}>{value.toFixed(1)}g</Text>
       <Text style={styles.macroTotalLabel}>{label}</Text>
     </View>
   );
@@ -804,10 +867,13 @@ const styles = StyleSheet.create({
   },
   mealTypeButton: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xs,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -818,6 +884,7 @@ const styles = StyleSheet.create({
   mealTypeText: {
     ...Typography.captionMedium,
     color: Colors.textSecondary,
+    textAlign: 'center',
   },
   mealTypeTextActive: {
     color: Colors.primary,

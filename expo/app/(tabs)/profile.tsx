@@ -16,7 +16,7 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { useMeals } from '@/context/MealsContext';
 import { useTranslation, Language } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { Crown, ChevronRight, Globe, Ruler, Download, Trash2 } from 'lucide-react-native';
+import { Crown, ChevronRight, Globe, Ruler, Download, Trash2, UtensilsCrossed } from 'lucide-react-native';
 import { calculateDailyCalorieGoal, calculateAge } from '@/types';
 import * as Haptics from 'expo-haptics';
 
@@ -294,6 +294,26 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+
+        {/* Diet Program (Premium) */}
+        {isPremium && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('dietProgram')}</Text>
+            <TouchableOpacity
+              style={styles.actionItem}
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/diet');
+              }}
+            >
+              <View style={styles.actionIcon}>
+                <UtensilsCrossed size={20} color={Colors.primary} />
+              </View>
+              <Text style={styles.actionLabel}>{t('dietProgram')}</Text>
+              <ChevronRight size={20} color={Colors.textTertiary} />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Account */}
         <View style={styles.section}>

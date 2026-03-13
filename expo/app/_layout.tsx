@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserProvider } from '@/context/UserContext';
 import { MealsProvider } from '@/context/MealsContext';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
+import { DietProvider } from '@/context/DietContext';
+import { WaterProvider } from '@/context/WaterContext';
 import { Colors } from '@/constants/theme';
 
 const queryClient = new QueryClient();
@@ -15,6 +17,8 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <UserProvider>
           <SubscriptionProvider>
+            <DietProvider>
+            <WaterProvider>
             <MealsProvider>
               <Stack
                 screenOptions={{
@@ -26,11 +30,14 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="paywall" />
                 <Stack.Screen name="subscription" />
+                <Stack.Screen name="diet" />
                 <Stack.Screen name="meal/[id]" />
                 <Stack.Screen name="add" options={{ presentation: 'modal' }} />
               </Stack>
               <StatusBar style="light" />
             </MealsProvider>
+            </WaterProvider>
+            </DietProvider>
           </SubscriptionProvider>
         </UserProvider>
       </QueryClientProvider>

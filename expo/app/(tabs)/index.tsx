@@ -14,6 +14,7 @@ import { BlurView } from 'expo-blur';
 import { useMeals } from '@/context/MealsContext';
 import { useUser } from '@/context/UserContext';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { useWater } from '@/context/WaterContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { Meal } from '@/types';
@@ -26,6 +27,7 @@ import {
   Crown,
   ChevronRight,
   Trash2,
+  Droplet,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
@@ -39,6 +41,7 @@ export default function HomeScreen() {
   const { getTodaysMeals, getTodaysCalories, getTodaysMacros, deleteMeal } = useMeals();
   const { profile, getGreeting } = useUser();
   const { isPremium, remainingFreeScans, canScan } = useSubscription();
+  const { todaysWaterMl, dailyGoalMl, addWater } = useWater();
 
   const todaysMeals = getTodaysMeals();
   const consumed = getTodaysCalories();
@@ -158,6 +161,56 @@ export default function HomeScreen() {
             goal={profile.dailyFatGoal}
             color={Colors.accentPink}
           />
+        </View>
+
+        {/* Water Tracker */}
+        <View style={styles.waterCard}>
+          <View style={styles.waterHeader}>
+            <Droplet size={20} color={Colors.accentBlue} />
+            <Text style={styles.waterTitle}>{t('waterIntake')}</Text>
+            <Text style={styles.waterAmount}>
+              {todaysWaterMl} / {dailyGoalMl} ml
+            </Text>
+          </View>
+          <View style={styles.waterProgressBg}>
+            <View
+              style={[
+                styles.waterProgressFill,
+                {
+                  width: `${Math.min((todaysWaterMl / dailyGoalMl) * 100, 100)}%`,
+                },
+              ]}
+            />
+          </View>
+          <View style={styles.waterButtons}>
+            <TouchableOpacity
+              style={styles.waterBtn}
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                void addWater(250);
+              }}
+            >
+              <Text style={styles.waterBtnText}>+250 ml</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.waterBtn}
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                void addWater(500);
+              }}
+            >
+              <Text style={styles.waterBtnText}>+500 ml</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.waterBtn}
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                void addWater(1000);
+              }}
+            >
+              <Text style={styles.waterBtnText}>+1 L</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Meals List */}
@@ -529,6 +582,55 @@ const styles = StyleSheet.create({
   macroBarFill: {
     height: '100%',
     borderRadius: BorderRadius.full,
+  },
+  waterCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.sm,
+  },
+  waterHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  waterTitle: {
+    ...Typography.captionMedium,
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  waterAmount: {
+    ...Typography.captionMedium,
+    color: Colors.text,
+  },
+  waterProgressBg: {
+    height: 8,
+    backgroundColor: Colors.surface2,
+    borderRadius: BorderRadius.full,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+  },
+  waterProgressFill: {
+    height: '100%',
+    backgroundColor: Colors.accentBlue,
+    borderRadius: BorderRadius.full,
+  },
+  waterButtons: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  waterBtn: {
+    flex: 1,
+    backgroundColor: Colors.surface2,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+  },
+  waterBtnText: {
+    ...Typography.captionMedium,
+    color: Colors.accentBlue,
   },
   mealsSection: {
     marginBottom: Spacing.lg,
