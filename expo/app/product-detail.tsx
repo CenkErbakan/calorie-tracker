@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { useMemo, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import type { ProductData, NutritionInfo } from '@/lib/barcodeService';
-import { calculateNutrition } from '@/lib/barcodeService';
+import { calculateNutrition, fetchProductByBarcode } from '@/lib/barcodeService';
 import { useMeals } from '@/context/MealsContext';
 import { useTranslation } from '@/lib/i18n';
 import { ChevronLeft, ScanLine } from 'lucide-react-native';
@@ -19,20 +19,46 @@ export default function ProductDetailScreen() {
   const { addMeal } = useMeals();
   const { t } = useTranslation();
 
-  const params = useLocalSearchParams<{ product: string }>();
-  const product: ProductData = useMemo(
-    () => JSON.parse(params.product as string),
-    [params.product],
-  );
+  const params = useLocalSearchParams<{ product?: string; barcode?: string }>();
+
+  // Parse product from params.product if present; otherwise will be fetched by barcode
+  const parsedProduct = useMemo<ProductData | null>(() => {
+    if (!params.product) return null;
+    try {
+      return JSON.parse(params.product as string) as ProductData;
+    } catch {
+      return null;
+    }
+  }, [params.product]);
+
+  const [product, setProduct] = useState<ProductData | null>(parsedProduct);
+  const [isFetching, setIsFetching] = useState(!parsedProduct && !!params.barcode);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Fetch by barcode when only barcode param is given (e.g. from recent scans)
+  useEffect(() => {
+    if (parsedProduct || !params.barcode) return;
+    setIsFetching(true);
+    fetchProductByBarcode(params.barcode as string)
+      .then((data) => {
+        if (data) {
+          setProduct(data);
+        } else {
+          setFetchError('Ürün bulunamadı.');
+        }
+      })
+      .catch(() => setFetchError('Bir hata oluştu.'))
+      .finally(() => setIsFetching(false));
+  }, [params.barcode, parsedProduct]);
 
   const initialPortion =
-    product.servingSize && Number.isFinite(product.servingSize)
+    product?.servingSize && Number.isFinite(product.servingSize)
       ? product.servingSize
       : 100;
 
   const [portion, setPortion] = useState(initialPortion);
-  const [nutrition, setNutrition] = useState<NutritionInfo>(
-    calculateNutrition(product, initialPortion),
+  const [nutrition, setNutrition] = useState<NutritionInfo | null>(
+    product ? calculateNutrition(product, initialPortion) : null,
   );
   const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>(() => {
     const hour = new Date().getHours();
@@ -41,7 +67,38 @@ export default function ProductDetailScreen() {
     if (hour >= 16 && hour < 22) return 'dinner';
     return 'snack';
   });
-  const [name, setName] = useState(product.name);
+  const [name, setName] = useState(product?.name ?? '');
+
+  // Update state when product is fetched asynchronously
+  useEffect(() => {
+    if (!product) return;
+    const p = product.servingSize && Number.isFinite(product.servingSize) ? product.servingSize : 100;
+    setPortion(p);
+    setNutrition(calculateNutrition(product, p));
+    setName(product.name);
+  }, [product]);
+
+  // Loading state
+  if (isFetching) {
+    return (
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Ürün yükleniyor…</Text>
+      </View>
+    );
+  }
+
+  // Error / not found state
+  if (fetchError || !product || !nutrition) {
+    return (
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <Text style={styles.errorText}>{fetchError ?? 'Ürün bulunamadı.'}</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <Text style={styles.backBtnText}>Geri Dön</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const handlePortionChange = (value: number) => {
     const clamped = Math.max(10, Math.min(500, value || 0));
@@ -767,6 +824,35 @@ const styles = StyleSheet.create({
   addButtonText: {
     ...Typography.h3,
     color: '#000',
+  },
+  centered: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingText: {
+    ...Typography.body,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
+  },
+  errorText: {
+    ...Typography.body,
+    color: Colors.error,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  backBtn: {
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+  },
+  backBtnText: {
+    ...Typography.bodyMedium,
+    color: Colors.primary,
   },
 });
 
