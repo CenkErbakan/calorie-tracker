@@ -33,7 +33,7 @@ import {
   FREE_DAILY_MESSAGES,
   type Message,
 } from '@/lib/chatService';
-import { Trash2, ArrowUp, Bot } from 'lucide-react-native';
+import { Trash2, ArrowUp, UserRound } from 'lucide-react-native';
 
 // ── Suggestion chips ─────────────────────────────────────────────────────────
 
@@ -47,6 +47,21 @@ const SUGGESTIONS = [
   '🥚 Yumurtanın besin değerleri neler?',
   '🏃 Kilo vermek için ne yemeliyim?',
 ];
+
+// ── NutriLens AI avatar ───────────────────────────────────────────────────────
+
+function NAvatar({ size = 28 }: { size?: number }) {
+  return (
+    <LinearGradient
+      colors={['#7C5CBF', '#00D4AA']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ width: size, height: size, borderRadius: size / 2, justifyContent: 'center', alignItems: 'center' }}
+    >
+      <UserRound size={size * 0.55} color="#fff" strokeWidth={2} />
+    </LinearGradient>
+  );
+}
 
 // ── Typing indicator ─────────────────────────────────────────────────────────
 
@@ -70,9 +85,7 @@ function TypingDots() {
 
   return (
     <View style={styles.typingBubble}>
-      <View style={styles.avatarSmall}>
-        <Bot size={14} color={Colors.primary} />
-      </View>
+      <NAvatar size={28} />
       <View style={styles.bubbleAssistant}>
         <View style={styles.typingDots}>
           {dots.map((dot, i) => (
@@ -132,9 +145,7 @@ function MessageBubble({ message, onRetry }: { message: Message; onRetry?: () =>
 
   return (
     <View style={styles.rowAssistant}>
-      <View style={styles.avatarSmall}>
-        <Bot size={14} color={Colors.primary} />
-      </View>
+      <NAvatar size={28} />
       <View style={{ maxWidth: '80%' }}>
         <View style={[styles.bubbleAssistant, message.isError && styles.bubbleError]}>
           <Text style={styles.bubbleAssistantText}>{message.content}</Text>
@@ -345,12 +356,10 @@ export default function ChatScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <LinearGradient colors={Colors.gradientPrimary} style={styles.headerLogo}>
-            <Bot size={16} color="#000" />
-          </LinearGradient>
+          <NAvatar size={36} />
         </View>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{t('chat_title')}</Text>
+          <Text style={styles.headerTitle}>{t('chat_tab')}</Text>
           <View style={styles.onlineRow}>
             <View style={styles.onlineDot} />
             <Text style={styles.onlineText}>{t('chat_online')}</Text>
@@ -474,13 +483,6 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   headerLeft: { marginRight: Spacing.sm },
-  headerLogo: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   headerCenter: { flex: 1 },
   headerTitle: {
     ...Typography.h3,
@@ -571,14 +573,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginBottom: Spacing.md,
     gap: Spacing.sm,
-  },
-  avatarSmall: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primaryGlow,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   bubbleAssistant: {
     backgroundColor: Colors.surface2,
