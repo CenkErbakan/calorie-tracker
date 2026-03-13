@@ -9,11 +9,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { History, BarChart2, Plus, ChevronRight } from 'lucide-react-native';
+import { History, BarChart2, Plus, ScanLine, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 const MENU_ITEMS = [
   { key: 'addMeal', href: '/add', icon: Plus },
+  { key: 'scan_tab', href: '/scan', icon: ScanLine },
   { key: 'history', href: '/history', icon: History },
   { key: 'analytics', href: '/analytics', icon: BarChart2 },
 ] as const;

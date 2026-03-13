@@ -28,7 +28,7 @@ const trTranslations = {
   // Navigation
   home: 'Ana Sayfa',
   more_tab: 'Daha Fazla',
-  more_subtitle: 'Öğün ekle, geçmiş ve analiz',
+  more_subtitle: 'Öğün ekle, tara, geçmiş ve analiz',
   history: 'Geçmiş',
   analytics: 'Analiz',
   profile: 'Profil',
@@ -327,7 +327,7 @@ const enTranslations = {
   // Navigation
   home: 'Home',
   more_tab: 'More',
-  more_subtitle: 'Add meal, history and analytics',
+  more_subtitle: 'Add meal, scan, history and analytics',
   history: 'History',
   analytics: 'Analytics',
   profile: 'Profile',
