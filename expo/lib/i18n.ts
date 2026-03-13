@@ -287,6 +287,19 @@ const trTranslations = {
   medicine_disclaimer: 'Bu bilgiler yalnızca referans amaçlıdır. Kullanmadan önce doktorunuza veya eczacınıza danışın.',
   medicine_not_found: 'İlaç bulunamadı. Bu ürün veritabanımızda henüz mevcut olmayabilir.',
   keep_out_of_reach: '🚫 Çocukların ulaşamayacağı yerde saklayın',
+
+  // Chat / AI Assistant
+  chat_tab: 'Sohbet',
+  chat_title: 'NutriLens AI',
+  chat_online: 'Çevrimiçi',
+  chat_placeholder: 'Yiyecekler hakkında sor...',
+  chat_welcome: 'Ben senin beslenme asistanınım.',
+  chat_welcome_sub: 'Yiyecekler ve beslenme hakkında her şeyi sorabilirsin',
+  chat_clear: 'Sohbeti Temizle',
+  chat_clear_confirm: 'Tüm mesajlar silinsin mi?',
+  chat_limit: 'Bugünkü 10 ücretsiz mesaj hakkını kullandın.',
+  chat_error: 'Bir hata oluştu. Lütfen tekrar dene.',
+  chat_retry: 'Tekrar Dene',
 } as const;
 
 // English translations
@@ -571,6 +584,19 @@ const enTranslations = {
   medicine_disclaimer: 'This information is for reference only. Always consult your doctor or pharmacist before use.',
   medicine_not_found: 'Medicine not found. This product may not be in our database yet.',
   keep_out_of_reach: '🚫 Keep out of reach of children',
+
+  // Chat / AI Assistant
+  chat_tab: 'Chat',
+  chat_title: 'NutriLens AI',
+  chat_online: 'Online',
+  chat_placeholder: 'Ask about any food...',
+  chat_welcome: "I'm your nutrition assistant.",
+  chat_welcome_sub: 'Ask me anything about food and nutrition',
+  chat_clear: 'Clear Chat',
+  chat_clear_confirm: 'Clear all messages?',
+  chat_limit: "You've used all 10 free messages today.",
+  chat_error: 'Oops, something went wrong. Please try again.',
+  chat_retry: 'Retry',
 } as const;
 
 type Translations = typeof enTranslations;

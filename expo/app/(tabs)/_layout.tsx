@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { StyleSheet, Platform } from 'react-native';
 import { Colors, BorderRadius, Spacing } from '@/constants/theme';
 import { useTranslation } from '@/lib/i18n';
-import { Home, History, BarChart2, User, UtensilsCrossed, ScanLine, TrendingUp } from 'lucide-react-native';
+import { Home, History, BarChart2, User, UtensilsCrossed, ScanLine, MessageCircle } from 'lucide-react-native';
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -62,6 +62,15 @@ export default function TabLayout() {
           title: t('analytics'),
           tabBarIcon: ({ color, size }) => (
             <BarChart2 size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: t('chat_tab'),
+          tabBarIcon: ({ color, size }) => (
+            <MessageCircle size={size} color={color} />
           ),
         }}
       />
