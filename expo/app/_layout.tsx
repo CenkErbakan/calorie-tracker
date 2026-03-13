@@ -33,6 +33,9 @@ export default function RootLayout() {
                 <Stack.Screen name="diet" />
                 <Stack.Screen name="meal/[id]" />
                 <Stack.Screen name="add" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="barcode-scanner" />
+                <Stack.Screen name="product-detail" />
+                <Stack.Screen name="medicine-detail" />
               </Stack>
               <StatusBar style="light" />
             </MealsProvider>

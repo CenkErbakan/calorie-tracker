@@ -16,14 +16,20 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.rork.tha7reg68ka2lobf1vtb9"
+      "bundleIdentifier": "app.rork.tha7reg68ka2lobf1vtb9",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Kamera, barkod tarama ve yemek foto\u011fraf\u0131 \u00e7ekmek i\u00e7in kullan\u0131l\u0131r."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.tha7reg68ka2lobf1vtb9"
+      "package": "app.rork.tha7reg68ka2lobf1vtb9",
+      "permissions": [
+        "CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

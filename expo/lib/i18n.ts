@@ -270,6 +270,23 @@ const trTranslations = {
   // Water
   waterIntake: 'Su Tüketimi',
   waterGlasses: 'bardak',
+
+  // Barcode & Scanner
+  scan_tab: 'Ürün Tara',
+  food_mode: 'Gıda',
+  medicine_mode: 'İlaç',
+  medicine_info: 'İlaç Bilgisi',
+  active_ingredients: 'Etken Maddeler',
+  what_is_it_for: 'Ne İçin Kullanılır?',
+  how_to_use: 'Nasıl Kullanılır?',
+  warnings: 'Uyarılar',
+  do_not_use: 'Kullanmayın:',
+  ask_doctor: 'Doktora Danışın:',
+  storage: 'Saklama Koşulları',
+  inactive_ingredients: 'Yardımcı Maddeler',
+  medicine_disclaimer: 'Bu bilgiler yalnızca referans amaçlıdır. Kullanmadan önce doktorunuza veya eczacınıza danışın.',
+  medicine_not_found: 'İlaç bulunamadı. Bu ürün veritabanımızda henüz mevcut olmayabilir.',
+  keep_out_of_reach: '🚫 Çocukların ulaşamayacağı yerde saklayın',
 } as const;
 
 // English translations
@@ -537,6 +554,23 @@ const enTranslations = {
   // Water
   waterIntake: 'Water Intake',
   waterGlasses: 'glasses',
+
+  // Barcode & Scanner
+  scan_tab: 'Scan',
+  food_mode: 'Food',
+  medicine_mode: 'Medicine',
+  medicine_info: 'Medicine Info',
+  active_ingredients: 'Active Ingredients',
+  what_is_it_for: 'What Is It For?',
+  how_to_use: 'How to Use',
+  warnings: 'Warnings',
+  do_not_use: 'Do Not Use If:',
+  ask_doctor: 'Ask a Doctor If:',
+  storage: 'Storage',
+  inactive_ingredients: 'Inactive Ingredients',
+  medicine_disclaimer: 'This information is for reference only. Always consult your doctor or pharmacist before use.',
+  medicine_not_found: 'Medicine not found. This product may not be in our database yet.',
+  keep_out_of_reach: '🚫 Keep out of reach of children',
 } as const;
 
 type Translations = typeof enTranslations;

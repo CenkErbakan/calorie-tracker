@@ -30,6 +30,13 @@ export const MealSchema = z.object({
   total_fat_grams: z.number(),
   notes: z.string().optional(),
   confidence: z.enum(['high', 'medium', 'low']).optional(),
+  // Kaynak bilgisi: AI fotoğraf analizi, manuel giriş veya barkod tarama
+  source: z.enum(['ai_photo', 'manual', 'barcode']).optional(),
+  // Barkodlu ürünler için ek alanlar
+  barcode: z.string().optional(),
+  brand: z.string().optional(),
+  product_image_url: z.string().optional(),
+  portion_grams: z.number().optional(),
 });
 
 export const NutritionDataSchema = z.object({

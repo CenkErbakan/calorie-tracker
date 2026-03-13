@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -43,8 +43,10 @@ export default function AddMealScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
+  const { action } = useLocalSearchParams<{ action?: string }>();
   const { addMeal, analyzePhoto } = useMeals();
   const { useScan, isPremium } = useSubscription();
+  const autoActionFiredRef = useRef(false);
 
   // Always reset state on mount
   const [step, setStep] = useState<'select' | 'preview' | 'analyzing' | 'edit'>('select');
@@ -57,15 +59,28 @@ export default function AddMealScreen() {
   // Force reset when screen is focused
   useFocusEffect(
     useCallback(() => {
-      // Reset all state
       setStep('select');
       setPhotoUri(null);
       setNutritionData(null);
       setError(null);
       setIsSaving(false);
       setLoadingText(t('detectingIngredients'));
+      autoActionFiredRef.current = false;
     }, [t])
   );
+
+  // Auto-trigger camera/gallery when action param is set
+  useEffect(() => {
+    if (!action || autoActionFiredRef.current) return;
+    autoActionFiredRef.current = true;
+
+    if (action === 'camera') {
+      void takePhoto();
+    } else if (action === 'gallery') {
+      void pickFromGallery();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [action]);
 
   // Cycle through loading texts
   useEffect(() => {
@@ -431,7 +446,7 @@ export default function AddMealScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Step 1: Photo Selection */}
+        {/* Step 1: Selection */}
         {step === 'select' && (
           <View style={styles.selectContainer}>
             <TouchableOpacity style={styles.optionCard} onPress={takePhoto}>
