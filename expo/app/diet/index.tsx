@@ -131,7 +131,7 @@ export default function DietWizardScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: Colors.background }]}
     >
       <LinearGradient colors={[Colors.background, Colors.surface]} style={styles.gradient}>
         {/* Progress */}

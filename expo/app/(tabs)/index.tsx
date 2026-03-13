@@ -379,8 +379,8 @@ function MacroBar({
       <View style={styles.macroHeader}>
         <Text style={styles.macroLabel}>{label}</Text>
         <Text style={styles.macroValues}>
-          <Text style={[styles.macroCurrent, { color }]}>{current}g</Text>
-          <Text style={styles.macroGoal}> / {goal}g</Text>
+        <Text style={[styles.macroCurrent, { color }]}>{Number(current).toFixed(1)}g</Text>
+        <Text style={styles.macroGoal}> / {Number(goal).toFixed(1)}g</Text>
         </Text>
       </View>
       <View style={styles.macroBarBg}>

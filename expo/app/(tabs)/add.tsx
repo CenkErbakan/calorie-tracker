@@ -242,8 +242,13 @@ export default function AddMealScreen() {
 
     const updatedIngredients = [...nutritionData.ingredients];
 
-    if (origWeight === 0) {
-      // Manuel giriş: sadece ağırlığı güncelle
+    // Manuel malzeme: AI'dan gelen original_* yoksa sadece gramajı güncelle, makrolara dokunma
+    const hasAiOrigins =
+      ingredient.original_protein_grams != null ||
+      ingredient.original_carbs_grams != null ||
+      ingredient.original_fat_grams != null;
+
+    if (origWeight === 0 || !hasAiOrigins) {
       updatedIngredients[index] = {
         ...ingredient,
         weight_grams: weightNum,
@@ -275,8 +280,13 @@ export default function AddMealScreen() {
     const origCalories = ingredient.original_calories ?? ingredient.calories;
     const updatedIngredients = [...nutritionData.ingredients];
 
-    if (origCalories === 0) {
-      // Manuel giriş: sadece kaloriyi güncelle
+    // Manuel malzeme: AI'dan gelen original_* yoksa sadece kaloriyi güncelle, makrolara dokunma
+    const hasAiOrigins =
+      ingredient.original_protein_grams != null ||
+      ingredient.original_carbs_grams != null ||
+      ingredient.original_fat_grams != null;
+
+    if (origCalories === 0 || !hasAiOrigins) {
       updatedIngredients[index] = {
         ...ingredient,
         calories: calNum,
