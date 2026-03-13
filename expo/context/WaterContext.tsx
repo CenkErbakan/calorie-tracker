@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getTodayKey } from '@/types';
 
 const WATER_STORAGE_KEY = '@nutrilens_water';
-const DEFAULT_DAILY_GOAL_ML = 2000;
+const DEFAULT_DAILY_GOAL_ML = 3000; // 12 bardak x 250ml
 
 interface WaterContextValue {
   todaysWaterMl: number;
@@ -53,7 +53,7 @@ export const [WaterProvider, useWater] = createContextHook<WaterContextValue>(()
   const addWater = useCallback(async (ml: number) => {
     const today = getTodayKey();
     const current = records[today] ?? 0;
-    const newTotal = current + ml;
+    const newTotal = Math.max(0, current + ml);
     const newRecords = { ...records, [today]: newTotal };
     setRecords(newRecords);
     await saveWater(newRecords);

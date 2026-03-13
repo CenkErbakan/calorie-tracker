@@ -28,6 +28,7 @@ import {
   ChevronRight,
   Trash2,
   Droplet,
+  GlassWater,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
@@ -163,53 +164,47 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Water Tracker */}
+        {/* Water Tracker - Bardak bardak */}
         <View style={styles.waterCard}>
           <View style={styles.waterHeader}>
             <Droplet size={20} color={Colors.accentBlue} />
             <Text style={styles.waterTitle}>{t('waterIntake')}</Text>
             <Text style={styles.waterAmount}>
-              {todaysWaterMl} / {dailyGoalMl} ml
+              {Math.min(Math.floor(todaysWaterMl / 250), 12)} / 12 {t('waterGlasses')}
             </Text>
           </View>
-          <View style={styles.waterProgressBg}>
-            <View
-              style={[
-                styles.waterProgressFill,
-                {
-                  width: `${Math.min((todaysWaterMl / dailyGoalMl) * 100, 100)}%`,
-                },
-              ]}
-            />
-          </View>
-          <View style={styles.waterButtons}>
-            <TouchableOpacity
-              style={styles.waterBtn}
-              onPress={() => {
-                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                void addWater(250);
-              }}
-            >
-              <Text style={styles.waterBtnText}>+250 ml</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.waterBtn}
-              onPress={() => {
-                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                void addWater(500);
-              }}
-            >
-              <Text style={styles.waterBtnText}>+500 ml</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.waterBtn}
-              onPress={() => {
-                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                void addWater(1000);
-              }}
-            >
-              <Text style={styles.waterBtnText}>+1 L</Text>
-            </TouchableOpacity>
+          <View style={styles.waterCupsContainer}>
+            {Array.from({ length: 12 })
+              .reduce<number[][]>((rows, _, i) => {
+                const rowIdx = Math.floor(i / 6);
+                if (!rows[rowIdx]) rows[rowIdx] = [];
+                rows[rowIdx].push(i);
+                return rows;
+              }, [])
+              .map((row, rowIdx) => (
+                <View key={rowIdx} style={styles.waterCupsRow}>
+                  {row.map((i) => {
+                    const isFilled = todaysWaterMl >= (i + 1) * 250;
+                    return (
+                      <TouchableOpacity
+                        key={i}
+                        style={[styles.waterCup, isFilled && styles.waterCupFilled]}
+                        onPress={() => {
+                          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          void addWater(isFilled ? -250 : 250);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <GlassWater
+                          size={32}
+                          color={isFilled ? '#FFFFFF' : Colors.textTertiary}
+                          strokeWidth={1.5}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ))}
           </View>
         </View>
 
@@ -605,32 +600,25 @@ const styles = StyleSheet.create({
     ...Typography.captionMedium,
     color: Colors.text,
   },
-  waterProgressBg: {
-    height: 8,
-    backgroundColor: Colors.surface2,
-    borderRadius: BorderRadius.full,
-    overflow: 'hidden',
-    marginBottom: Spacing.md,
-  },
-  waterProgressFill: {
-    height: '100%',
-    backgroundColor: Colors.accentBlue,
-    borderRadius: BorderRadius.full,
-  },
-  waterButtons: {
-    flexDirection: 'row',
+  waterCupsContainer: {
     gap: Spacing.sm,
   },
-  waterBtn: {
-    flex: 1,
-    backgroundColor: Colors.surface2,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.md,
-    alignItems: 'center',
+  waterCupsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
   },
-  waterBtnText: {
-    ...Typography.captionMedium,
-    color: Colors.accentBlue,
+  waterCup: {
+    flex: 1,
+    aspectRatio: 1,
+    maxWidth: 56,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.surface2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  waterCupFilled: {
+    backgroundColor: Colors.accentBlue,
   },
   mealsSection: {
     marginBottom: Spacing.lg,

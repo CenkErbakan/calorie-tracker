@@ -269,6 +269,7 @@ const trTranslations = {
 
   // Water
   waterIntake: 'Su Tüketimi',
+  waterGlasses: 'bardak',
 } as const;
 
 // English translations
@@ -535,6 +536,7 @@ const enTranslations = {
 
   // Water
   waterIntake: 'Water Intake',
+  waterGlasses: 'glasses',
 } as const;
 
 type Translations = typeof enTranslations;
