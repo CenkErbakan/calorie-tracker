@@ -286,7 +286,7 @@ function StatsSlide({
             style={styles.textInput}
             value={data.dateOfBirth}
             onChangeText={(text) => setData({ ...data, dateOfBirth: formatDate(text) })}
-            placeholder="DD/MM/YYYY"
+            placeholder={t('dateFormatPlaceholder')}
             placeholderTextColor={Colors.textTertiary}
             keyboardType="numeric"
             maxLength={10}
@@ -330,7 +330,7 @@ function StatsSlide({
               onChangeText={(text) => setData({ ...data, targetWeightKg: text ? parseInt(text) : null })}
               keyboardType="numeric"
               maxLength={3}
-              placeholder="-"
+              placeholder={t('optionalPlaceholder')}
               placeholderTextColor={Colors.textTertiary}
             />
             <Text style={styles.unitLabel}>kg</Text>

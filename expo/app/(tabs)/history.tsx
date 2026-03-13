@@ -14,6 +14,7 @@ import { useUser } from '@/context/UserContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, subWeeks, addWeeks, getDaysInMonth } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import { ChevronLeft, ChevronRight, X, Target, TrendingUp, TrendingDown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -172,8 +173,8 @@ export default function HistoryScreen() {
           </TouchableOpacity>
           <Text style={styles.currentPeriod}>
             {viewMode === 'week'
-              ? `${format(weekData[0].date, 'MMM d')} - ${format(weekData[6].date, 'MMM d')}`
-              : format(currentDate, 'MMMM yyyy')}
+              ? `${formatDate(weekData[0].date, 'MMM d')} - ${formatDate(weekData[6].date, 'MMM d')}`
+              : formatDate(currentDate, 'MMMM yyyy')}
           </Text>
           <TouchableOpacity onPress={navigateNext} style={styles.navButton}>
             <ChevronRight size={24} color={Colors.text} />
@@ -214,7 +215,7 @@ export default function HistoryScreen() {
                           ]}
                         />
                       </View>
-                      <Text style={styles.barLabel}>{format(day.date, 'EEE')}</Text>
+                      <Text style={styles.barLabel}>{formatDate(day.date, 'EEE')}</Text>
                       <Text style={styles.barValue}>{day.calories > 0 ? day.calories : '-'}</Text>
                     </TouchableOpacity>
                   );
@@ -231,7 +232,7 @@ export default function HistoryScreen() {
             {/* Selected Day Meals */}
             <View style={styles.dayMealsSection}>
               <Text style={styles.sectionTitle}>
-                {selectedDay ? format(selectedDay, 'EEEE, MMM d') : t('todaysMeals')}
+                {selectedDay ? formatDate(selectedDay, 'EEEE, MMM d') : t('todaysMeals')}
               </Text>
               {selectedDayMeals.length === 0 ? (
                 <View style={styles.emptyState}>
@@ -258,11 +259,14 @@ export default function HistoryScreen() {
           <View style={styles.monthView}>
             {/* Calendar Grid */}
             <View style={styles.calendarGrid}>
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                <Text key={day} style={styles.calendarHeader}>
-                  {day}
-                </Text>
-              ))}
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+                const d = new Date(2024, 0, day);
+                return (
+                  <Text key={day} style={styles.calendarHeader}>
+                    {formatDate(d, 'EEE')}
+                  </Text>
+                );
+              })}
               {Object.entries(monthData.days).map(([day, data]) => (
                 <TouchableOpacity
                   key={day}
@@ -328,7 +332,7 @@ export default function HistoryScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {selectedDay && format(selectedDay, 'EEEE, MMMM d')}
+                {selectedDay && formatDate(selectedDay, 'EEEE, MMMM d')}
               </Text>
               <TouchableOpacity onPress={() => setShowDayModal(false)}>
                 <X size={24} color={Colors.text} />

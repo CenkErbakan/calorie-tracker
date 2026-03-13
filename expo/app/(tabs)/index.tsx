@@ -16,7 +16,7 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { Meal } from '@/types';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import {
   Plus,
   Flame,
@@ -76,7 +76,7 @@ export default function HomeScreen() {
           <View>
             <Text style={styles.greeting}>{getGreeting()}</Text>
             <Text style={styles.date}>
-              {format(new Date(), 'EEEE, MMMM d')}
+              {formatDate(new Date(), 'EEEE, MMMM d')}
             </Text>
           </View>
           <TouchableOpacity
@@ -276,7 +276,7 @@ function CalorieRing({
 
       <View style={styles.ringContent}>
         <Text style={styles.ringRemaining}>{remaining.toLocaleString()}</Text>
-        <Text style={styles.ringLabel}>kcal {t('kcalLeft')}</Text>
+        <Text style={styles.ringLabel}>{t('kcalLeft')}</Text>
       </View>
     </View>
   );
@@ -361,7 +361,7 @@ function MealCard({
           {meal.meal_name}
         </Text>
         <Text style={styles.mealType}>
-          {t(meal.meal_type)} • {format(meal.timestamp, 'h:mm a')}
+          {t(meal.meal_type)} • {formatDate(meal.timestamp, 'h:mm a')}
         </Text>
       </View>
       <View style={styles.mealRight}>

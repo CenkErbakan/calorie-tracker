@@ -96,7 +96,7 @@ const trTranslations = {
   detectingIngredients: 'Malzemeler tespit ediliyor...',
   estimatingPortions: 'Porsiyonlar tahmin ediliyor...',
   calculatingNutrition: 'Besin değerleri hesaplanıyor...',
-  analyzeWithAI: 'AI ile Analiz Et',
+  analyzeWithAI: 'Analiz Et',
   changePhoto: 'Fotoğrafı Değiştir',
   mealName: 'Öğün Adı',
   ingredients: 'Malzemeler',
@@ -208,6 +208,20 @@ const trTranslations = {
   manageSubscriptionHint: 'Mağaza abonelik ayarlarını aç',
   cancelSubscription: 'Aboneliği iptal et',
   cancelSubscriptionConfirm: 'Aboneliğinizi iptal etmek istediğinize emin misiniz?',
+  changePlan: 'Planı Değiştir',
+  restoreNotFound: 'Geri yüklenecek satın alım bulunamadı',
+
+  // Form placeholders
+  dateFormatPlaceholder: 'GG/AA/YYYY',
+  ingredientNamePlaceholder: 'Malzeme adı',
+  weightPlaceholder: 'g',
+  caloriesPlaceholder: 'kcal',
+  notSet: 'Belirtilmedi',
+  optionalPlaceholder: '-',
+  exportDataReady: 'Veriler dışa aktarım için hazır',
+  proteinShort: 'P',
+  carbsShort: 'K',
+  fatShort: 'Y',
 
   // Errors
   cameraPermission: 'Kamera izni gerekli',
@@ -312,7 +326,7 @@ const enTranslations = {
   detectingIngredients: 'Detecting ingredients...',
   estimatingPortions: 'Estimating portions...',
   calculatingNutrition: 'Calculating nutrition...',
-  analyzeWithAI: 'Analyze with AI',
+  analyzeWithAI: 'Analyze',
   changePhoto: 'Change Photo',
   mealName: 'Meal Name',
   ingredients: 'Ingredients',
@@ -424,6 +438,20 @@ const enTranslations = {
   manageSubscriptionHint: 'Open store subscription settings',
   cancelSubscription: 'Cancel Subscription',
   cancelSubscriptionConfirm: 'Are you sure you want to cancel your subscription?',
+  changePlan: 'Change Plan',
+  restoreNotFound: 'No purchases to restore found',
+
+  // Form placeholders
+  dateFormatPlaceholder: 'DD/MM/YYYY',
+  ingredientNamePlaceholder: 'Ingredient name',
+  weightPlaceholder: 'g',
+  caloriesPlaceholder: 'kcal',
+  notSet: 'Not set',
+  optionalPlaceholder: '-',
+  exportDataReady: 'Data ready for export',
+  proteinShort: 'P',
+  carbsShort: 'C',
+  fatShort: 'F',
 
   // Errors
   cameraPermission: 'Camera permission required',

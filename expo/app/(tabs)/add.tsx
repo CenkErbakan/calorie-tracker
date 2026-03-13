@@ -491,9 +491,9 @@ export default function AddMealScreen() {
                 <Text style={[styles.tableHeaderCell, { flex: 2 }]}>{t('ingredient')}</Text>
                 <Text style={styles.tableHeaderCell}>{t('weight')}</Text>
                 <Text style={styles.tableHeaderCell}>{t('calories')}</Text>
-                <Text style={styles.tableHeaderCell}>P</Text>
-                <Text style={styles.tableHeaderCell}>C</Text>
-                <Text style={styles.tableHeaderCell}>F</Text>
+                <Text style={styles.tableHeaderCell}>{t('proteinShort')}</Text>
+                <Text style={styles.tableHeaderCell}>{t('carbsShort')}</Text>
+                <Text style={styles.tableHeaderCell}>{t('fatShort')}</Text>
                 <View style={{ width: 40 }} />
               </View>
 
@@ -503,7 +503,7 @@ export default function AddMealScreen() {
                     style={[styles.tableCell, styles.tableCellName]}
                     value={ingredient.name}
                     onChangeText={(text) => updateIngredientField(index, 'name', text)}
-                    placeholder="Name"
+                    placeholder={t('ingredientNamePlaceholder')}
                     placeholderTextColor={Colors.textTertiary}
                   />
                   <TextInput
@@ -511,7 +511,7 @@ export default function AddMealScreen() {
                     value={ingredient.weight_grams ? String(ingredient.weight_grams) : ''}
                     onChangeText={(text) => handleWeightChange(index, text)}
                     keyboardType="numeric"
-                    placeholder="g"
+                    placeholder={t('weightPlaceholder')}
                     placeholderTextColor={Colors.textTertiary}
                   />
                   <TextInput
@@ -519,7 +519,7 @@ export default function AddMealScreen() {
                     value={ingredient.calories ? String(ingredient.calories) : ''}
                     onChangeText={(text) => handleCaloriesChange(index, text)}
                     keyboardType="numeric"
-                    placeholder="kcal"
+                    placeholder={t('caloriesPlaceholder')}
                     placeholderTextColor={Colors.textTertiary}
                   />
                   <TextInput
@@ -527,7 +527,7 @@ export default function AddMealScreen() {
                     value={ingredient.protein_grams ? String(ingredient.protein_grams) : ''}
                     onChangeText={(text) => updateIngredientField(index, 'protein_grams', text)}
                     keyboardType="numeric"
-                    placeholder="g"
+                    placeholder={t('weightPlaceholder')}
                     placeholderTextColor={Colors.textTertiary}
                   />
                   <TextInput
@@ -535,7 +535,7 @@ export default function AddMealScreen() {
                     value={ingredient.carbs_grams ? String(ingredient.carbs_grams) : ''}
                     onChangeText={(text) => updateIngredientField(index, 'carbs_grams', text)}
                     keyboardType="numeric"
-                    placeholder="g"
+                    placeholder={t('weightPlaceholder')}
                     placeholderTextColor={Colors.textTertiary}
                   />
                   <TextInput
@@ -543,7 +543,7 @@ export default function AddMealScreen() {
                     value={ingredient.fat_grams ? String(ingredient.fat_grams) : ''}
                     onChangeText={(text) => updateIngredientField(index, 'fat_grams', text)}
                     keyboardType="numeric"
-                    placeholder="g"
+                    placeholder={t('weightPlaceholder')}
                     placeholderTextColor={Colors.textTertiary}
                   />
                   <TouchableOpacity

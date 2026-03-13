@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '@/context/UserContext';
+import type { Gender } from '@/types';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useMeals } from '@/context/MealsContext';
 import { useTranslation, Language } from '@/lib/i18n';
@@ -73,7 +74,7 @@ export default function ProfileScreen() {
   const handleExport = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const _data = JSON.stringify(meals, null, 2);
-    Alert.alert(t('exportData'), 'Data ready for export');
+    Alert.alert(t('exportData'), t('exportDataReady'));
   };
 
   const handleDeleteAll = () => {
@@ -152,9 +153,33 @@ export default function ProfileScreen() {
                 value={editedProfile.dateOfBirth}
                 onChange={(text) => setEditedProfile({ ...editedProfile, dateOfBirth: formatDateInput(text) })}
                 keyboardType="numeric"
-                placeholder="DD/MM/YYYY"
+                placeholder={t('dateFormatPlaceholder')}
                 maxLength={10}
               />
+              <View style={styles.editField}>
+                <Text style={styles.editLabel}>{t('gender')}</Text>
+                <View style={styles.genderSelector}>
+                  {(['male', 'female', 'other'] as Gender[]).map((g) => (
+                    <TouchableOpacity
+                      key={g}
+                      style={[
+                        styles.genderButton,
+                        editedProfile.gender === g && styles.genderButtonActive,
+                      ]}
+                      onPress={() => setEditedProfile({ ...editedProfile, gender: g })}
+                    >
+                      <Text
+                        style={[
+                          styles.genderButtonText,
+                          editedProfile.gender === g && styles.genderButtonTextActive,
+                        ]}
+                      >
+                        {t(g)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
               <EditField
                 label={t('height')}
                 value={String(editedProfile.heightCm)}
@@ -176,7 +201,8 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.infoList}>
               <InfoItem label={t('yourName')} value={profile.name} />
-              <InfoItem label={t('dateOfBirth')} value={profile.dateOfBirth || '-'} />
+              <InfoItem label={t('dateOfBirth')} value={profile.dateOfBirth || t('notSet')} />
+              <InfoItem label={t('gender')} value={t(profile.gender)} />
               <InfoItem label={t('height')} value={`${profile.heightCm} cm`} />
               <InfoItem label={t('weight')} value={`${profile.weightKg} kg`} />
             </View>
@@ -507,6 +533,29 @@ const styles = StyleSheet.create({
     ...Typography.captionMedium,
     color: Colors.textSecondary,
     marginBottom: Spacing.xs,
+  },
+  genderSelector: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  genderButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.surface2,
+    alignItems: 'center',
+  },
+  genderButtonActive: {
+    backgroundColor: Colors.primaryGlow,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  genderButtonText: {
+    ...Typography.captionMedium,
+    color: Colors.textSecondary,
+  },
+  genderButtonTextActive: {
+    color: Colors.primary,
   },
   editInput: {
     backgroundColor: Colors.surface2,

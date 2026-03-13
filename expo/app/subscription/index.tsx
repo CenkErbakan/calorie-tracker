@@ -16,7 +16,7 @@ import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { Crown, Check, RefreshCw, Settings2, ArrowRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 
 function getManageSubscriptionUrl() {
   if (Platform.OS === 'ios') return 'https://apps.apple.com/account/subscriptions';
@@ -42,7 +42,7 @@ export default function SubscriptionScreen() {
     if (!isPremium) return null;
     if (subscription.plan === 'lifetime') return t('lifetimeAccess');
     if (!subscription.expiryDate) return null;
-    return t('expiresOn', { date: format(new Date(subscription.expiryDate), 'PPP') });
+    return t('expiresOn', { date: formatDate(new Date(subscription.expiryDate), 'PPP') });
   }, [isPremium, subscription.plan, subscription.expiryDate, t]);
 
   const handleGoPremium = () => {

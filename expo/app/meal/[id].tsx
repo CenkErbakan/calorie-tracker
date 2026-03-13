@@ -14,7 +14,7 @@ import { useMeals } from '@/context/MealsContext';
 import { useUser } from '@/context/UserContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { format } from 'date-fns';
+import { formatDate } from '@/lib/dateUtils';
 import {
   ChevronLeft,
   Trash2,
@@ -103,7 +103,7 @@ export default function MealDetailScreen() {
             <View style={styles.timeRow}>
               <Clock size={14} color={Colors.textSecondary} />
               <Text style={styles.timeText}>
-                {format(meal.timestamp, 'EEEE, MMMM d • h:mm a')}
+                {formatDate(meal.timestamp, 'EEEE, MMMM d • h:mm a')}
               </Text>
             </View>
           </View>
