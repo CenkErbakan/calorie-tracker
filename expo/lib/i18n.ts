@@ -263,6 +263,9 @@ const trTranslations = {
   dietNoPlan: 'Henüz diyet planı yok',
   dietEnterWeightToLose: 'Lütfen vermek istediğiniz kilo miktarını girin',
   dietCreateNew: 'Yeni Plan Oluştur',
+  dietShoppingList: 'Alışveriş Listesi',
+  dietShoppingListSubtitle: '7 günlük programa göre haftalık ihtiyaçlar',
+  dietShoppingListEmpty: 'Malzemeler gramajlı değilse liste boş görünebilir',
 
   // Water
   waterIntake: 'Su Tüketimi',
@@ -526,6 +529,9 @@ const enTranslations = {
   dietNoPlan: 'No diet plan yet',
   dietEnterWeightToLose: 'Please enter how many kg you want to lose',
   dietCreateNew: 'Create New Plan',
+  dietShoppingList: 'Shopping List',
+  dietShoppingListSubtitle: 'Weekly needs based on 7-day plan',
+  dietShoppingListEmpty: 'List may be empty if ingredients have no grams',
 
   // Water
   waterIntake: 'Water Intake',

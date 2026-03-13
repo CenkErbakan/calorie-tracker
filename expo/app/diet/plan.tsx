@@ -5,14 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDiet } from '@/context/DietContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { ChevronLeft, ChevronRight, Clock, Utensils } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Clock, Utensils, ShoppingCart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { getShoppingListFromPlan } from '@/types/diet';
 import type { DietDay, DietMeal } from '@/types/diet';
 
 const MEAL_TYPE_KEYS = {
@@ -22,13 +22,17 @@ const MEAL_TYPE_KEYS = {
   snack: 'snack',
 } as const;
 
+type ViewMode = 'plan' | 'shopping';
+
 export default function DietPlanScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { plan, getPlanForDay, clearPlan } = useDiet();
   const [dayIndex, setDayIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('plan');
 
   const goBack = () => router.replace('/(tabs)');
+  const shoppingList = plan ? getShoppingListFromPlan(plan) : [];
 
   if (!plan) {
     return (
@@ -64,21 +68,51 @@ export default function DietPlanScreen() {
         <Text style={styles.headerTitle}>{t('dietPlan')}</Text>
       </View>
 
-      {/* Day selector */}
-      <View style={styles.daySelector}>
-        <TouchableOpacity onPress={goPrev} style={styles.dayNavBtn}>
-          <ChevronLeft size={24} color={Colors.primary} />
+      {/* View mode toggle: Plan | Shopping List */}
+      <View style={styles.viewModeRow}>
+        <TouchableOpacity
+          style={[styles.viewModeBtn, viewMode === 'plan' && styles.viewModeBtnActive]}
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setViewMode('plan');
+          }}
+        >
+          <Utensils size={18} color={viewMode === 'plan' ? Colors.primary : Colors.textSecondary} />
+          <Text style={[styles.viewModeText, viewMode === 'plan' && styles.viewModeTextActive]}>
+            {t('dietPlan')}
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.dayLabel}>
-          {t('dietDay')} {dayPlan?.dayNumber ?? dayIndex + 1}
-        </Text>
-        <TouchableOpacity onPress={goNext} style={styles.dayNavBtn}>
-          <ChevronRight size={24} color={Colors.primary} />
+        <TouchableOpacity
+          style={[styles.viewModeBtn, viewMode === 'shopping' && styles.viewModeBtnActive]}
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setViewMode('shopping');
+          }}
+        >
+          <ShoppingCart size={18} color={viewMode === 'shopping' ? Colors.primary : Colors.textSecondary} />
+          <Text style={[styles.viewModeText, viewMode === 'shopping' && styles.viewModeTextActive]}>
+            {t('dietShoppingList')}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Day summary */}
-      {dayPlan && (
+      {/* Day selector - only when plan view */}
+      {viewMode === 'plan' && (
+        <View style={styles.daySelector}>
+          <TouchableOpacity onPress={goPrev} style={styles.dayNavBtn}>
+            <ChevronLeft size={24} color={Colors.primary} />
+          </TouchableOpacity>
+          <Text style={styles.dayLabel}>
+            {t('dietDay')} {dayPlan?.dayNumber ?? dayIndex + 1}
+          </Text>
+          <TouchableOpacity onPress={goNext} style={styles.dayNavBtn}>
+            <ChevronRight size={24} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Day summary - only when plan view */}
+      {viewMode === 'plan' && dayPlan && (
         <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>{t('dietDailyTotal')}</Text>
           <View style={styles.macroRow}>
@@ -90,14 +124,45 @@ export default function DietPlanScreen() {
         </View>
       )}
 
+      {/* Shopping List view */}
+      {viewMode === 'shopping' && (
+        <ScrollView
+          style={styles.shoppingScroll}
+          contentContainerStyle={styles.shoppingScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.shoppingCard}>
+            <Text style={styles.shoppingTitle}>{t('dietShoppingList')}</Text>
+            <Text style={styles.shoppingSubtitle}>{t('dietShoppingListSubtitle')}</Text>
+            {shoppingList.length === 0 ? (
+              <Text style={styles.shoppingEmpty}>{t('dietShoppingListEmpty')}</Text>
+            ) : (
+              <View style={styles.shoppingList}>
+                {shoppingList.map((item, i) => (
+                  <View key={i} style={styles.shoppingItem}>
+                    <Text style={styles.shoppingItemName}>
+                      {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                    </Text>
+                    <Text style={styles.shoppingItemGrams}>
+                    {item.totalGrams > 0 ? `${Math.round(item.totalGrams)}g` : '—'}
+                  </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      )}
+
       {/* Meals - saat saat */}
+      {viewMode === 'plan' && (
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {dayPlan?.meals.map((meal, i) => (
-          <MealCard key={i} meal={meal} t={t} />
+          <MealCard key={i} meal={meal} t={t as (k: string) => string} />
         ))}
         <TouchableOpacity
           style={styles.createNewBtn}
@@ -109,6 +174,7 @@ export default function DietPlanScreen() {
           <Text style={styles.createNewText}>{t('dietCreateNew')}</Text>
         </TouchableOpacity>
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -249,6 +315,85 @@ const styles = StyleSheet.create({
   ingredientsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: Spacing.sm },
   ingredientsLabel: { ...Typography.small, color: Colors.textSecondary },
   ingredientsText: { ...Typography.small, color: Colors.text },
+  viewModeRow: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xs,
+  },
+  viewModeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  viewModeBtnActive: {
+    backgroundColor: Colors.primaryGlow,
+  },
+  viewModeText: {
+    ...Typography.captionMedium,
+    color: Colors.textSecondary,
+  },
+  viewModeTextActive: {
+    color: Colors.primary,
+  },
+  shoppingScroll: {
+    flex: 1,
+  },
+  shoppingScrollContent: {
+    paddingBottom: 100,
+  },
+  shoppingCard: {
+    backgroundColor: Colors.surface,
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.sm,
+  },
+  shoppingTitle: {
+    ...Typography.h3,
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  shoppingSubtitle: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
+  },
+  shoppingEmpty: {
+    ...Typography.body,
+    color: Colors.textTertiary,
+    textAlign: 'center',
+    paddingVertical: Spacing.xl,
+  },
+  shoppingList: {
+    gap: Spacing.sm,
+  },
+  shoppingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.surface2,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+  },
+  shoppingItemName: {
+    ...Typography.body,
+    color: Colors.text,
+    flex: 1,
+  },
+  shoppingItemGrams: {
+    ...Typography.captionMedium,
+    color: Colors.primary,
+    marginLeft: Spacing.md,
+  },
   createNewBtn: {
     marginTop: Spacing.xl,
     marginBottom: 100,

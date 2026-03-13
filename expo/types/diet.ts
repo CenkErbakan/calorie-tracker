@@ -84,3 +84,88 @@ export interface DietWizardData {
   allergies: string[];
   dislikedFoods: string[];
 }
+
+/** Haftalık diyet planından alışveriş listesi çıkarır (gramajlı malzemeleri toplar) */
+export interface ShoppingListItem {
+  name: string;
+  totalGrams: number;
+}
+
+interface ParsedIngredient {
+  grams: number;
+  name: string;
+}
+
+/** Pişirme/hazırlama kelimelerini kaldırır - alışverişte ham malzeme alınır */
+const PREPARATION_WORDS = [
+  'haşlanmış', 'kızarmış', 'pişmiş', 'gril', 'ızgara', 'fırında',
+  'baked', 'boiled', 'fried', 'grilled', 'cooked', 'steamed', 'roasted',
+  'kavrulmuş', 'buğulama', 'dilimlenmiş', 'doğranmış', 'rendelenmiş',
+  'sliced', 'diced', 'grated', 'minced', 'çiğ', 'raw', 'taze', 'fresh',
+  'dondurulmuş', 'frozen', 'kurutulmuş', 'dried', 'salamura', 'pickled',
+  'organik', 'organic', 'az yağlı', 'low-fat', 'tam yağlı', 'full-fat',
+];
+
+function toBaseIngredient(name: string): string {
+  let base = name.trim().toLowerCase();
+  // "2 yumurta" -> "yumurta", "3 adet domates" -> "domates"
+  base = base.replace(/^\d+(?:\.\d+)?\s*(?:adet|ad\.?|x)?\s*/i, '').trim();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const word of PREPARATION_WORDS) {
+      const re = new RegExp(`^${word}\\s+`, 'i');
+      if (re.test(base)) {
+        base = base.replace(re, '').trim();
+        changed = true;
+      }
+      const re2 = new RegExp(`\\s+${word}$`, 'i');
+      if (re2.test(base)) {
+        base = base.replace(re2, '').trim();
+        changed = true;
+      }
+    }
+  }
+  return base.trim() || name.trim().toLowerCase();
+}
+
+function parseIngredient(str: string): ParsedIngredient | null {
+  const s = str.trim();
+  if (!s) return null;
+
+  // "100g chicken breast" veya "100 g chicken breast"
+  const m1 = s.match(/^(\d+(?:\.\d+)?)\s*g\s+(.+)$/i);
+  if (m1) return { grams: parseFloat(m1[1]), name: toBaseIngredient(m1[2]) };
+
+  // "2 eggs (120g)" veya "2 haşlanmış yumurta (120g)"
+  const m2 = s.match(/^(.+?)\s*\((\d+(?:\.\d+)?)\s*g\)\s*$/i);
+  if (m2) return { grams: parseFloat(m2[2]), name: toBaseIngredient(m2[1]) };
+
+  // "chicken breast 100g" (sonunda)
+  const m3 = s.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*g\s*$/i);
+  if (m3) return { grams: parseFloat(m3[2]), name: toBaseIngredient(m3[1]) };
+
+  // Gramaj yok - base'e çevir
+  return { grams: 0, name: toBaseIngredient(s) };
+}
+
+export function getShoppingListFromPlan(plan: DietPlan): ShoppingListItem[] {
+  const map = new Map<string, number>();
+
+  for (const day of plan.days) {
+    for (const meal of day.meals) {
+      const ingredients = meal.ingredients ?? [];
+      for (const ing of ingredients) {
+        const parsed = parseIngredient(ing);
+        if (!parsed) continue;
+        const key = parsed.name;
+        const current = map.get(key) ?? 0;
+        map.set(key, current + parsed.grams);
+      }
+    }
+  }
+
+  return Array.from(map.entries())
+    .map(([name, totalGrams]) => ({ name, totalGrams }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}

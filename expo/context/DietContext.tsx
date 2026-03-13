@@ -151,6 +151,8 @@ Create a balanced 7-day plan. Each day should have:
 CRITICAL: Daily total MUST be approximately ${targetCalories} kcal (range: ${targetCalories - 100} to ${targetCalories + 100}). This creates the ${kgPerMonth} kg/month deficit needed for the chosen speed.
 Macros: ~30% protein, 40% carbs, 30% fat.
 
+INGREDIENTS RULE: Every ingredient MUST include grams. Use format "Xg ingredient name" (e.g. "100g chicken breast", "50g rice", "30g olive oil", "2 eggs (120g)"). This allows the user to know exactly how much to eat and prepare.
+
 Return ONLY valid JSON matching this structure:
 {
   "days": [
@@ -166,7 +168,7 @@ Return ONLY valid JSON matching this structure:
           "protein": 25,
           "carbs": 45,
           "fat": 12,
-          "ingredients": ["ingredient1", "ingredient2"]
+          "ingredients": ["100g chicken breast", "50g rice", "30g olive oil"]
         }
       ],
       "totalCalories": ${targetCalories},
