@@ -12,6 +12,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
@@ -34,6 +35,7 @@ import {
 
 // Reset state when screen is focused
 export default function AddMealScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
   const { addMeal, analyzePhoto } = useMeals();
@@ -343,7 +345,7 @@ export default function AddMealScreen() {
       style={styles.container}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
         <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
           <ChevronLeft size={24} color={Colors.text} />
         </TouchableOpacity>
@@ -486,79 +488,88 @@ export default function AddMealScreen() {
             </View>
 
             {/* Ingredients Table */}
-            <View style={styles.tableContainer}>
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderCell, { flex: 2 }]}>{t('ingredient')}</Text>
-                <Text style={styles.tableHeaderCell}>{t('weight')}</Text>
-                <Text style={styles.tableHeaderCell}>{t('calories')}</Text>
-                <Text style={styles.tableHeaderCell}>{t('proteinShort')}</Text>
-                <Text style={styles.tableHeaderCell}>{t('carbsShort')}</Text>
-                <Text style={styles.tableHeaderCell}>{t('fatShort')}</Text>
-                <View style={{ width: 40 }} />
-              </View>
+            <View style={styles.tableSection}>
+              <Text style={styles.tableSectionTitle}>{t('ingredients')}</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                contentContainerStyle={styles.tableScrollContent}
+              >
+                <View style={styles.tableContainer}>
+                  <View style={styles.tableHeader}>
+                    <Text style={styles.tableHeaderCellName}>{t('ingredient')}</Text>
+                    <Text style={styles.tableHeaderCellNum}>{t('weight')}</Text>
+                    <Text style={styles.tableHeaderCellNum}>{t('calories')}</Text>
+                    <Text style={styles.tableHeaderCellNum}>{t('proteinShort')}</Text>
+                    <Text style={styles.tableHeaderCellNum}>{t('carbsShort')}</Text>
+                    <Text style={styles.tableHeaderCellNum}>{t('fatShort')}</Text>
+                    <View style={styles.tableHeaderCellDelete} />
+                  </View>
 
-              {nutritionData.ingredients.map((ingredient, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <TextInput
-                    style={[styles.tableCell, styles.tableCellName]}
-                    value={ingredient.name}
-                    onChangeText={(text) => updateIngredientField(index, 'name', text)}
-                    placeholder={t('ingredientNamePlaceholder')}
-                    placeholderTextColor={Colors.textTertiary}
-                  />
-                  <TextInput
-                    style={styles.tableCell}
-                    value={ingredient.weight_grams ? String(ingredient.weight_grams) : ''}
-                    onChangeText={(text) => handleWeightChange(index, text)}
-                    keyboardType="numeric"
-                    placeholder={t('weightPlaceholder')}
-                    placeholderTextColor={Colors.textTertiary}
-                  />
-                  <TextInput
-                    style={styles.tableCell}
-                    value={ingredient.calories ? String(ingredient.calories) : ''}
-                    onChangeText={(text) => handleCaloriesChange(index, text)}
-                    keyboardType="numeric"
-                    placeholder={t('caloriesPlaceholder')}
-                    placeholderTextColor={Colors.textTertiary}
-                  />
-                  <TextInput
-                    style={styles.tableCell}
-                    value={ingredient.protein_grams ? String(ingredient.protein_grams) : ''}
-                    onChangeText={(text) => updateIngredientField(index, 'protein_grams', text)}
-                    keyboardType="numeric"
-                    placeholder={t('weightPlaceholder')}
-                    placeholderTextColor={Colors.textTertiary}
-                  />
-                  <TextInput
-                    style={styles.tableCell}
-                    value={ingredient.carbs_grams ? String(ingredient.carbs_grams) : ''}
-                    onChangeText={(text) => updateIngredientField(index, 'carbs_grams', text)}
-                    keyboardType="numeric"
-                    placeholder={t('weightPlaceholder')}
-                    placeholderTextColor={Colors.textTertiary}
-                  />
-                  <TextInput
-                    style={styles.tableCell}
-                    value={ingredient.fat_grams ? String(ingredient.fat_grams) : ''}
-                    onChangeText={(text) => updateIngredientField(index, 'fat_grams', text)}
-                    keyboardType="numeric"
-                    placeholder={t('weightPlaceholder')}
-                    placeholderTextColor={Colors.textTertiary}
-                  />
-                  <TouchableOpacity
-                    style={styles.deleteRowButton}
-                    onPress={() => removeIngredient(index)}
-                  >
-                    <Trash2 size={16} color={Colors.error} />
+                  {nutritionData.ingredients.map((ingredient, index) => (
+                    <View key={index} style={styles.tableRow}>
+                      <TextInput
+                        style={styles.tableCellName}
+                        value={ingredient.name}
+                        onChangeText={(text) => updateIngredientField(index, 'name', text)}
+                        placeholder={t('ingredientNamePlaceholder')}
+                        placeholderTextColor={Colors.textTertiary}
+                      />
+                      <TextInput
+                        style={styles.tableCellNum}
+                        value={ingredient.weight_grams ? String(ingredient.weight_grams) : ''}
+                        onChangeText={(text) => handleWeightChange(index, text)}
+                        keyboardType="numeric"
+                        placeholder={t('weightPlaceholder')}
+                        placeholderTextColor={Colors.textTertiary}
+                      />
+                      <TextInput
+                        style={styles.tableCellNum}
+                        value={ingredient.calories ? String(ingredient.calories) : ''}
+                        onChangeText={(text) => handleCaloriesChange(index, text)}
+                        keyboardType="numeric"
+                        placeholder={t('caloriesPlaceholder')}
+                        placeholderTextColor={Colors.textTertiary}
+                      />
+                      <TextInput
+                        style={styles.tableCellNum}
+                        value={ingredient.protein_grams ? String(ingredient.protein_grams) : ''}
+                        onChangeText={(text) => updateIngredientField(index, 'protein_grams', text)}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor={Colors.textTertiary}
+                      />
+                      <TextInput
+                        style={styles.tableCellNum}
+                        value={ingredient.carbs_grams ? String(ingredient.carbs_grams) : ''}
+                        onChangeText={(text) => updateIngredientField(index, 'carbs_grams', text)}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor={Colors.textTertiary}
+                      />
+                      <TextInput
+                        style={styles.tableCellNum}
+                        value={ingredient.fat_grams ? String(ingredient.fat_grams) : ''}
+                        onChangeText={(text) => updateIngredientField(index, 'fat_grams', text)}
+                        keyboardType="numeric"
+                        placeholder="0"
+                        placeholderTextColor={Colors.textTertiary}
+                      />
+                      <TouchableOpacity
+                        style={styles.deleteRowButton}
+                        onPress={() => removeIngredient(index)}
+                      >
+                        <Trash2 size={18} color={Colors.error} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  <TouchableOpacity style={styles.addRowButton} onPress={addIngredient}>
+                    <Plus size={18} color={Colors.primary} />
+                    <Text style={styles.addRowText}>{t('addIngredient')}</Text>
                   </TouchableOpacity>
                 </View>
-              ))}
-
-              <TouchableOpacity style={styles.addRowButton} onPress={addIngredient}>
-                <Plus size={16} color={Colors.primary} />
-                <Text style={styles.addRowText}>{t('addIngredient')}</Text>
-              </TouchableOpacity>
+              </ScrollView>
             </View>
 
             {/* Notes */}
@@ -637,7 +648,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingTop: 60,
     paddingBottom: Spacing.md,
   },
   backButton: {
@@ -746,7 +756,8 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   editContainer: {
-    gap: Spacing.lg,
+    gap: Spacing.xl,
+    paddingTop: Spacing.sm,
   },
   errorBanner: {
     flexDirection: 'row',
@@ -814,7 +825,9 @@ const styles = StyleSheet.create({
   totalsCard: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
+    padding: Spacing.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Shadows.sm,
   },
   totalCalories: {
@@ -843,47 +856,81 @@ const styles = StyleSheet.create({
     ...Typography.small,
     color: Colors.textSecondary,
   },
+  tableSection: {
+    gap: Spacing.sm,
+  },
+  tableSectionTitle: {
+    ...Typography.captionMedium,
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  tableScrollContent: {
+    paddingBottom: Spacing.sm,
+  },
   tableContainer: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.xl,
     padding: Spacing.md,
+    minWidth: 560,
     ...Shadows.sm,
   },
   tableHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
     paddingBottom: Spacing.sm,
     marginBottom: Spacing.sm,
   },
-  tableHeaderCell: {
+  tableHeaderCellName: {
     ...Typography.smallMedium,
     color: Colors.textSecondary,
-    flex: 1,
+    width: 180,
+    marginRight: Spacing.xs,
+  },
+  tableHeaderCellNum: {
+    ...Typography.smallMedium,
+    color: Colors.textSecondary,
+    width: 56,
     textAlign: 'center',
+    marginHorizontal: 2,
+  },
+  tableHeaderCellDelete: {
+    width: 44,
   },
   tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
-  tableCell: {
-    flex: 1,
+  tableCellName: {
+    width: 180,
+    marginRight: Spacing.xs,
     backgroundColor: Colors.surface2,
     borderRadius: BorderRadius.sm,
-    padding: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    ...Typography.body,
+    color: Colors.text,
+    textAlign: 'left',
+  },
+  tableCellNum: {
+    width: 56,
+    marginHorizontal: 2,
+    backgroundColor: Colors.surface2,
+    borderRadius: BorderRadius.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
     ...Typography.small,
     color: Colors.text,
     textAlign: 'center',
-    marginHorizontal: 2,
-  },
-  tableCellName: {
-    flex: 2,
-    textAlign: 'left',
   },
   deleteRowButton: {
-    width: 40,
+    width: 44,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
   },
   addRowButton: {
     flexDirection: 'row',
@@ -895,6 +942,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderRadius: BorderRadius.lg,
     gap: Spacing.xs,
+    alignSelf: 'stretch',
   },
   addRowText: {
     ...Typography.bodyMedium,
