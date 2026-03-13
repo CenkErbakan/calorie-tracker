@@ -275,6 +275,7 @@ const trTranslations = {
   // Water
   waterIntake: 'Su Tüketimi',
   waterGlasses: 'bardak',
+  steps: 'adım',
 
   // Barcode & Scanner
   scan_tab: 'Ürün Tara',
@@ -577,6 +578,7 @@ const enTranslations = {
   // Water
   waterIntake: 'Water Intake',
   waterGlasses: 'glasses',
+  steps: 'steps',
 
   // Barcode & Scanner
   scan_tab: 'Scan',

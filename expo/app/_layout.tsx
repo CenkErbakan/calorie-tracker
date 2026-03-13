@@ -7,6 +7,7 @@ import { MealsProvider } from '@/context/MealsContext';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { DietProvider } from '@/context/DietContext';
 import { WaterProvider } from '@/context/WaterContext';
+import { StepsProvider } from '@/context/StepsContext';
 import { Colors } from '@/constants/theme';
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ export default function RootLayout() {
           <SubscriptionProvider>
             <DietProvider>
             <WaterProvider>
+            <StepsProvider>
             <MealsProvider>
               <Stack
                 screenOptions={{
@@ -38,6 +40,7 @@ export default function RootLayout() {
               </Stack>
               <StatusBar style="light" />
             </MealsProvider>
+            </StepsProvider>
             </WaterProvider>
             </DietProvider>
           </SubscriptionProvider>

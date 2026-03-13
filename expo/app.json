@@ -28,7 +28,8 @@
       },
       "package": "app.rork.tha7reg68ka2lobf1vtb9",
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "android.permission.ACTIVITY_RECOGNITION"
       ]
     },
     "web": {

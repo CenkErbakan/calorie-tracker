@@ -15,6 +15,7 @@ import { useMeals } from '@/context/MealsContext';
 import { useUser } from '@/context/UserContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useWater } from '@/context/WaterContext';
+import { useSteps } from '@/context/StepsContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { Meal } from '@/types';
@@ -43,6 +44,7 @@ export default function HomeScreen() {
   const { profile, getGreeting } = useUser();
   const { isPremium, remainingFreeScans, canScan } = useSubscription();
   const { todaysWaterMl, dailyGoalMl, addWater } = useWater();
+  const { todaysSteps, burnedCalories, isAvailable } = useSteps();
 
   const todaysMeals = getTodaysMeals();
   const consumed = getTodaysCalories();
@@ -136,9 +138,10 @@ export default function HomeScreen() {
           <View style={styles.statDivider} />
           <MiniStat
             icon={<Zap size={18} color={Colors.accentOrange} />}
-            value={0}
+            value={burnedCalories}
             label={t('burned')}
             color={Colors.accentOrange}
+            subText={isAvailable ? `${todaysSteps.toLocaleString()} ${t('steps')}` : undefined}
           />
         </View>
 
@@ -339,11 +342,13 @@ function MiniStat({
   value,
   label,
   color,
+  subText,
 }: {
   icon: React.ReactNode;
   value: number;
   label: string;
   color: string;
+  subText?: string;
 }) {
   return (
     <View style={styles.miniStat}>
@@ -352,6 +357,9 @@ function MiniStat({
       </View>
       <Text style={styles.miniStatValue}>{value.toLocaleString()}</Text>
       <Text style={styles.miniStatLabel}>{label}</Text>
+      {subText && (
+        <Text style={styles.miniStatSubText}>{subText}</Text>
+      )}
     </View>
   );
 }
@@ -533,6 +541,11 @@ const styles = StyleSheet.create({
   miniStatLabel: {
     ...Typography.small,
     color: Colors.textSecondary,
+  },
+  miniStatSubText: {
+    ...Typography.small,
+    color: Colors.textTertiary,
+    marginTop: 2,
   },
   statDivider: {
     width: 1,
