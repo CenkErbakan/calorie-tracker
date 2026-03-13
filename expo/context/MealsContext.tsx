@@ -2,7 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getLocales } from 'expo-localization';
-import { Meal, MealSchema, NutritionData, Ingredient, getTodayKey, getMealStorageKey } from '@/types';
+import { Meal, MealSchema, NutritionData, Ingredient, getTodayKey, getMealStorageKey, toLocalDateKey } from '@/types';
 import { generateObject } from '@rork-ai/toolkit-sdk';
 import { z } from 'zod';
 import { i18n } from '@/lib/i18n';
@@ -58,7 +58,7 @@ export const [MealsProvider, useMeals] = createContextHook<MealsContextValue>(()
       for (let i = 0; i < 30; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
-        const dateKey = date.toISOString().split('T')[0];
+        const dateKey = toLocalDateKey(date);
         const storageKey = getMealStorageKey(dateKey);
 
         const stored = await AsyncStorage.getItem(storageKey);
@@ -102,7 +102,7 @@ export const [MealsProvider, useMeals] = createContextHook<MealsContextValue>(()
 
     const dateKey = getTodayKey();
     const dateMeals = meals.filter(m => {
-      const mealDate = new Date(m.timestamp).toISOString().split('T')[0];
+      const mealDate = toLocalDateKey(new Date(m.timestamp));
       return mealDate === dateKey;
     });
 
@@ -120,9 +120,9 @@ export const [MealsProvider, useMeals] = createContextHook<MealsContextValue>(()
     const updatedMeals = [...meals];
     updatedMeals[mealIndex] = updatedMeal;
 
-    const dateKey = new Date(updatedMeal.timestamp).toISOString().split('T')[0];
+    const dateKey = toLocalDateKey(new Date(updatedMeal.timestamp));
     const dateMeals = updatedMeals.filter(m => {
-      const mealDate = new Date(m.timestamp).toISOString().split('T')[0];
+      const mealDate = toLocalDateKey(new Date(m.timestamp));
       return mealDate === dateKey;
     });
 
@@ -136,9 +136,9 @@ export const [MealsProvider, useMeals] = createContextHook<MealsContextValue>(()
 
     const updatedMeals = meals.filter(m => m.id !== id);
 
-    const dateKey = new Date(mealToDelete.timestamp).toISOString().split('T')[0];
+    const dateKey = toLocalDateKey(new Date(mealToDelete.timestamp));
     const dateMeals = updatedMeals.filter(m => {
-      const mealDate = new Date(m.timestamp).toISOString().split('T')[0];
+      const mealDate = toLocalDateKey(new Date(m.timestamp));
       return mealDate === dateKey;
     });
 
@@ -229,7 +229,7 @@ Return ONLY a valid JSON object with no extra text:
   const getTodaysMeals = useCallback(() => {
     const today = getTodayKey();
     return meals.filter(meal => {
-      const mealDate = new Date(meal.timestamp).toISOString().split('T')[0];
+      const mealDate = toLocalDateKey(new Date(meal.timestamp));
       return mealDate === today;
     }).sort((a, b) => b.timestamp - a.timestamp);
   }, [meals]);
@@ -249,7 +249,7 @@ Return ONLY a valid JSON object with no extra text:
 
   const getMealsForDate = useCallback((date: string) => {
     return meals.filter(meal => {
-      const mealDate = new Date(meal.timestamp).toISOString().split('T')[0];
+      const mealDate = toLocalDateKey(new Date(meal.timestamp));
       return mealDate === date;
     }).sort((a, b) => b.timestamp - a.timestamp);
   }, [meals]);

@@ -322,8 +322,17 @@ export function calculateMacroGoals(dailyCalories: number, goal: Goal): { protei
   };
 }
 
+/** Tarih/timestamp'tan yerel tarih anahtarı (YYYY-MM-DD) */
+export function toLocalDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Yerel saat dilimine göre bugünün tarih anahtarı (YYYY-MM-DD) */
 export function getTodayKey(): string {
-  return new Date().toISOString().split('T')[0];
+  return toLocalDateKey(new Date());
 }
 
 export function getMealStorageKey(date: string): string {

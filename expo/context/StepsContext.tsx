@@ -2,7 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Pedometer } from 'expo-sensors';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { getTodayKey } from '@/types';
 import { useUser } from '@/context/UserContext';
 
@@ -27,6 +27,8 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
   const [todaysSteps, setTodaysSteps] = useState(0);
   const [isAvailable, setIsAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const lastDateRef = useRef<string>(getTodayKey());
+  const androidBaseRef = useRef(0);
 
   const weightKg = profile.weightKg ?? 70;
 
@@ -79,6 +81,8 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
+        lastDateRef.current = getTodayKey();
+
         // iOS: getStepCountAsync gives today's total (no watch needed)
         if (Platform.OS === 'ios') {
           try {
@@ -95,14 +99,14 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
         // Android: watchStepCount (steps since subscription) + persisted base
         if (Platform.OS !== 'ios') {
           const storedSteps = await loadStoredSteps();
-          const baseRef = { current: storedSteps };
+          androidBaseRef.current = storedSteps;
           if (storedSteps > 0) {
             setTodaysSteps(storedSteps);
           }
 
           subscription = Pedometer.watchStepCount((result) => {
             const steps = result?.steps ?? 0;
-            const newTotal = baseRef.current + steps;
+            const newTotal = androidBaseRef.current + steps;
             setTodaysSteps(newTotal);
             void saveSteps(newTotal);
           });
@@ -142,6 +146,21 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
 
     return () => clearInterval(interval);
   }, [isAvailable, saveSteps]);
+
+  // Gün değiştiğinde adımları sıfırla (uygulama arka planda kalıp yeni güne geçildiyse)
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      const today = getTodayKey();
+      if (lastDateRef.current !== today) {
+        lastDateRef.current = today;
+        androidBaseRef.current = 0;
+        setTodaysSteps(0);
+        void saveSteps(0);
+      }
+    });
+    return () => sub.remove();
+  }, [saveSteps]);
 
   const burnedCalories = useMemo(
     () => stepsToCalories(todaysSteps, weightKg),
