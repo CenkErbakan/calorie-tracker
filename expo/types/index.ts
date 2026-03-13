@@ -228,15 +228,37 @@ export const GOALS: { value: Goal; labelKey: string; descriptionKey: string; cal
 
 // ============== UTILITIES ==============
 
+/** Parse date from DD/MM/YYYY or YYYY-MM-DD format, return age. Returns 30 if invalid/empty. */
 export function calculateAge(dateOfBirth: string): number {
-  const dob = new Date(dateOfBirth);
+  if (!dateOfBirth || !dateOfBirth.trim()) return 30;
+
+  let dob: Date;
+  const cleaned = dateOfBirth.replace(/\D/g, '');
+
+  if (cleaned.length === 8) {
+    const day = parseInt(cleaned.slice(0, 2), 10);
+    const month = parseInt(cleaned.slice(2, 4), 10) - 1;
+    const year = parseInt(cleaned.slice(4, 8), 10);
+    if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year > 1900) {
+      dob = new Date(year, month, day);
+    } else {
+      dob = new Date(dateOfBirth);
+    }
+  } else if (dateOfBirth.includes('-')) {
+    dob = new Date(dateOfBirth);
+  } else {
+    dob = new Date(dateOfBirth);
+  }
+
+  if (isNaN(dob.getTime())) return 30;
+
   const today = new Date();
   let age = today.getFullYear() - dob.getFullYear();
   const monthDiff = today.getMonth() - dob.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
     age--;
   }
-  return age;
+  return Math.max(18, Math.min(100, age));
 }
 
 export function calculateDailyCalorieGoal(
@@ -247,19 +269,26 @@ export function calculateDailyCalorieGoal(
   activityLevel: ActivityLevel,
   goal: Goal
 ): number {
-  // Mifflin-St Jeor Equation
+  const w = Math.max(30, Math.min(300, weightKg || 70));
+  const h = Math.max(100, Math.min(250, heightCm || 170));
+  const a = Math.max(18, Math.min(100, age || 30));
+
+  // Mifflin-St Jeor Equation (gold standard for BMR)
+  const base = 10 * w + 6.25 * h - 5 * a;
   let bmr: number;
   if (gender === 'male') {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+    bmr = base + 5;
+  } else if (gender === 'female') {
+    bmr = base - 161;
   } else {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+    bmr = base - 78; // Average of male (+5) and female (-161)
   }
 
   const activityMultiplier = ACTIVITY_LEVELS.find(l => l.value === activityLevel)?.multiplier ?? 1.55;
   const tdee = Math.round(bmr * activityMultiplier);
 
   const goalAdjustment = GOALS.find(g => g.value === goal)?.calorieAdjustment ?? 0;
-  return Math.max(1200, tdee + goalAdjustment); // Minimum 1200 calories
+  return Math.max(1200, Math.min(5000, tdee + goalAdjustment)); // Min 1200, max 5000 kcal
 }
 
 export function calculateMacroGoals(dailyCalories: number, goal: Goal): { protein: number; carbs: number; fat: number } {

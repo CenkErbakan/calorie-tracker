@@ -22,7 +22,7 @@ interface UserContextValue {
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   updateSettings: (updates: Partial<AppSettings>) => Promise<void>;
   updateNotificationSettings: (notifications: AppSettings['notifications']) => Promise<void>;
-  recalculateGoals: () => Promise<void>;
+  recalculateGoals: (profileOverride?: Partial<UserProfile>) => Promise<void>;
   completeOnboarding: (onboardingData: Partial<UserProfile>) => Promise<void>;
   getGreeting: () => string;
   getRemainingScans: () => number;
@@ -92,27 +92,31 @@ export const [UserProvider, useUser] = createContextHook<UserContextValue>(() =>
     await updateSettings({ notifications });
   }, [updateSettings]);
 
-  const recalculateGoals = useCallback(async () => {
-    if (!profile.dateOfBirth) return;
-
-    const age = calculateAge(profile.dateOfBirth);
+  const recalculateGoals = useCallback(async (profileOverride?: Partial<UserProfile>) => {
+    const p = { ...profile, ...profileOverride };
+    const age = calculateAge(p.dateOfBirth);
     const newCalorieGoal = calculateDailyCalorieGoal(
-      profile.weightKg,
-      profile.heightCm,
+      p.weightKg,
+      p.heightCm,
       age,
-      profile.gender,
-      profile.activityLevel,
-      profile.goal
+      p.gender,
+      p.activityLevel,
+      p.goal
     );
 
-    const macros = calculateMacroGoals(newCalorieGoal, profile.goal);
+    const macros = calculateMacroGoals(newCalorieGoal, p.goal);
 
-    await updateProfile({
+    const updates: Partial<UserProfile> = {
       dailyCalorieGoal: newCalorieGoal,
       dailyProteinGoal: macros.protein,
       dailyCarbsGoal: macros.carbs,
       dailyFatGoal: macros.fat,
-    });
+    };
+    if (profileOverride) {
+      const { dailyCalorieGoal, dailyProteinGoal, dailyCarbsGoal, dailyFatGoal, ...inputFields } = profileOverride;
+      Object.assign(updates, inputFields);
+    }
+    await updateProfile(updates);
   }, [profile, updateProfile]);
 
   const completeOnboarding = useCallback(async (onboardingData: Partial<UserProfile>) => {

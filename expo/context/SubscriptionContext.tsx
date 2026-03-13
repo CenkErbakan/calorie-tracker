@@ -3,6 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Subscription, ScanQuota, FREE_DAILY_SCANS, AD_SCANS_PER_DAY, SubscriptionPlan } from '@/types';
 import { getTodayKey } from '@/types';
+import { useUser } from '@/context/UserContext';
+
+const VIP_NAMES = ['cenk', 'serkan'];
 
 const SUBSCRIPTION_KEY = '@nutrilens_subscription';
 const SCAN_QUOTA_KEY = '@nutrilens_scan_quota';
@@ -38,9 +41,15 @@ const DEFAULT_SCAN_QUOTA: ScanQuota = {
 };
 
 export const [SubscriptionProvider, useSubscription] = createContextHook<SubscriptionContextValue>(() => {
+  const { profile } = useUser();
   const [subscription, setSubscription] = useState<Subscription>(DEFAULT_SUBSCRIPTION);
   const [scanQuota, setScanQuota] = useState<ScanQuota>(DEFAULT_SCAN_QUOTA);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isVipUser = useMemo(() => {
+    const name = profile.name?.trim().toLowerCase() ?? '';
+    return VIP_NAMES.includes(name);
+  }, [profile.name]);
 
   useEffect(() => {
     void loadData();
@@ -138,7 +147,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   }, []);
 
   const watchAdForScan = useCallback(async (): Promise<boolean> => {
-    if (subscription.tier === 'premium') return true;
+    if (subscription.tier === 'premium' || isVipUser) return true;
 
     await checkAndResetDailyQuota();
 
@@ -156,10 +165,10 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     }
 
     return false;
-  }, [subscription.tier, scanQuota, checkAndResetDailyQuota]);
+  }, [subscription.tier, isVipUser, scanQuota, checkAndResetDailyQuota]);
 
   const useScan = useCallback(async (): Promise<boolean> => {
-    if (subscription.tier === 'premium') return true;
+    if (subscription.tier === 'premium' || isVipUser) return true;
 
     await checkAndResetDailyQuota();
 
@@ -174,7 +183,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     }
 
     return false;
-  }, [subscription.tier, scanQuota, checkAndResetDailyQuota]);
+  }, [subscription.tier, isVipUser, scanQuota, checkAndResetDailyQuota]);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     // Simulate restore - in production, use RevenueCat
@@ -188,11 +197,12 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   }, []);
 
   const isPremium = useMemo(() => {
+    if (isVipUser) return true;
     if (subscription.tier !== 'premium') return false;
     if (subscription.plan === 'lifetime') return true;
     if (subscription.expiryDate && subscription.expiryDate > Date.now()) return true;
     return false;
-  }, [subscription]);
+  }, [subscription, isVipUser]);
 
   const remainingFreeScans = useMemo(() => {
     if (isPremium) return Infinity;

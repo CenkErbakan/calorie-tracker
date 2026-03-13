@@ -1,9 +1,12 @@
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getLocales } from 'expo-localization';
 import { Meal, MealSchema, NutritionData, Ingredient, getTodayKey, getMealStorageKey } from '@/types';
 import { generateObject } from '@rork-ai/toolkit-sdk';
 import { z } from 'zod';
+import { i18n } from '@/lib/i18n';
+import type { Language } from '@/lib/i18n';
 
 interface MealsContextValue {
   meals: Meal[];
@@ -155,6 +158,15 @@ export const [MealsProvider, useMeals] = createContextHook<MealsContextValue>(()
       reader.readAsDataURL(blob);
     });
 
+    // Resolve language: 'auto' -> device locale, otherwise use selected language
+    const lang: Language = i18n.getLanguage();
+    const effectiveLang = lang === 'auto'
+      ? (getLocales()[0]?.languageCode === 'tr' ? 'tr' : 'en')
+      : lang;
+    const languageInstruction = effectiveLang === 'tr'
+      ? 'IMPORTANT: Respond in Turkish. Use Turkish for meal_name, all ingredient names, and notes (e.g. "Tavuk Izgara", "Pirinç", "Salata").'
+      : 'IMPORTANT: Respond in English. Use English for meal_name, all ingredient names, and notes (e.g. "Grilled Chicken", "Rice", "Salad").';
+
     const result = await generateObject({
       messages: [
         {
@@ -162,7 +174,11 @@ export const [MealsProvider, useMeals] = createContextHook<MealsContextValue>(()
           content: [
             {
               type: 'text',
-              text: `You are a professional nutritionist and dietitian. Analyze the food in the provided image carefully. Identify every visible ingredient and estimate portions based on standard serving sizes and visual cues. Return ONLY a valid JSON object with no extra text:
+              text: `You are a professional nutritionist and dietitian. Analyze the food in the provided image carefully. Identify every visible ingredient and estimate portions based on standard serving sizes and visual cues.
+
+${languageInstruction}
+
+Return ONLY a valid JSON object with no extra text:
 {
   "meal_name": string,
   "meal_type": "breakfast" | "lunch" | "dinner" | "snack",
