@@ -20,7 +20,6 @@ import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import {
   getDietSpeedOptions,
-  type DietSpeed,
   type DietWizardData,
 } from '@/types/diet';
 import { ChevronRight, ChevronLeft, Scale, Zap, AlertCircle, ThumbsDown } from 'lucide-react-native';
@@ -66,7 +65,7 @@ export default function DietWizardScreen() {
   const handleBack = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (step > 0) setStep((s) => s - 1);
-    else router.replace('/(tabs)');
+    else router.back();
   };
 
   const handleGenerate = async () => {
@@ -81,12 +80,12 @@ export default function DietWizardScreen() {
       return;
     }
 
-    const plan = await generatePlan({
+    const planResult = await generatePlan({
       ...data,
       weightToLoseKg: weightToLose,
     });
 
-    if (plan) {
+    if (planResult) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/diet/plan');
     }
@@ -97,7 +96,6 @@ export default function DietWizardScreen() {
       case 0:
         return (data.weightToLoseKg || 0) > 0;
       case 1:
-        return true;
       case 2:
       case 3:
         return true;
@@ -345,7 +343,7 @@ const styles = StyleSheet.create({
   },
   progressDotActive: { backgroundColor: Colors.primary, width: 24 },
   progressDotDone: { backgroundColor: Colors.primary },
-  scrollContent: { paddingHorizontal: Spacing.lg, paddingBottom: 120 },
+  scrollContent: { paddingHorizontal: Spacing.lg, paddingBottom: 90 },
   step: { alignItems: 'center' },
   iconWrap: {
     width: 80,
@@ -439,8 +437,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingBottom: 40,
-    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    paddingTop: Spacing.md,
     backgroundColor: Colors.background,
   },
   backBtn: {
@@ -455,8 +453,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
   },
   nextBtnText: { ...Typography.h3, color: '#FFF' },
 });

@@ -268,6 +268,9 @@ const trTranslations = {
   dietShoppingList: 'Alışveriş Listesi',
   dietShoppingListSubtitle: '7 günlük programa göre haftalık ihtiyaçlar',
   dietShoppingListEmpty: 'Malzemeler gramajlı değilse liste boş görünebilir',
+  dietExercise: 'Egzersiz',
+  dietExerciseSubtitle: 'Günlük egzersiz önerileri',
+  dietExerciseEmpty: 'Bu plan için egzersiz önerisi yok',
 
   // Water
   waterIntake: 'Su Tüketimi',
@@ -567,6 +570,9 @@ const enTranslations = {
   dietShoppingList: 'Shopping List',
   dietShoppingListSubtitle: 'Weekly needs based on 7-day plan',
   dietShoppingListEmpty: 'List may be empty if ingredients have no grams',
+  dietExercise: 'Exercise',
+  dietExerciseSubtitle: 'Daily exercise suggestions',
+  dietExerciseEmpty: 'No exercise suggestions for this plan',
 
   // Water
   waterIntake: 'Water Intake',

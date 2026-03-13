@@ -10,10 +10,10 @@ import { useRouter } from 'expo-router';
 import { useDiet } from '@/context/DietContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { ChevronLeft, ChevronRight, Clock, Utensils, ShoppingCart } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Clock, Utensils, ShoppingCart, Dumbbell } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { getShoppingListFromPlan } from '@/types/diet';
-import type { DietDay, DietMeal } from '@/types/diet';
+import type { DietDay, DietMeal, DietExercise } from '@/types/diet';
 
 const MEAL_TYPE_KEYS = {
   breakfast: 'breakfast',
@@ -22,7 +22,7 @@ const MEAL_TYPE_KEYS = {
   snack: 'snack',
 } as const;
 
-type ViewMode = 'plan' | 'shopping';
+type ViewMode = 'plan' | 'shopping' | 'exercise';
 
 export default function DietPlanScreen() {
   const { t } = useTranslation();
@@ -31,15 +31,11 @@ export default function DietPlanScreen() {
   const [dayIndex, setDayIndex] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('plan');
 
-  const goBack = () => router.replace('/(tabs)');
   const shoppingList = plan ? getShoppingListFromPlan(plan) : [];
 
   if (!plan) {
     return (
       <View style={styles.container}>
-        <TouchableOpacity style={styles.backBtn} onPress={goBack}>
-          <ChevronLeft size={24} color={Colors.text} />
-        </TouchableOpacity>
         <Text style={styles.emptyText}>{t('dietNoPlan')}</Text>
       </View>
     );
@@ -62,13 +58,10 @@ export default function DietPlanScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={goBack} style={styles.backBtn}>
-          <ChevronLeft size={24} color={Colors.text} />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('dietPlan')}</Text>
       </View>
 
-      {/* View mode toggle: Plan | Shopping List */}
+      {/* View mode toggle: Plan | Shopping List | Exercise */}
       <View style={styles.viewModeRow}>
         <TouchableOpacity
           style={[styles.viewModeBtn, viewMode === 'plan' && styles.viewModeBtnActive]}
@@ -94,10 +87,22 @@ export default function DietPlanScreen() {
             {t('dietShoppingList')}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.viewModeBtn, viewMode === 'exercise' && styles.viewModeBtnActive]}
+          onPress={() => {
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setViewMode('exercise');
+          }}
+        >
+          <Dumbbell size={18} color={viewMode === 'exercise' ? Colors.primary : Colors.textSecondary} />
+          <Text style={[styles.viewModeText, viewMode === 'exercise' && styles.viewModeTextActive]}>
+            {t('dietExercise')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Day selector - only when plan view */}
-      {viewMode === 'plan' && (
+      {/* Day selector - when plan or exercise view */}
+      {(viewMode === 'plan' || viewMode === 'exercise') && (
         <View style={styles.daySelector}>
           <TouchableOpacity onPress={goPrev} style={styles.dayNavBtn}>
             <ChevronLeft size={24} color={Colors.primary} />
@@ -122,6 +127,40 @@ export default function DietPlanScreen() {
             <MacroPill label="Y" value={dayPlan.totalFat} unit="g" />
           </View>
         </View>
+      )}
+
+      {/* Exercise view */}
+      {viewMode === 'exercise' && (
+        <ScrollView
+          style={styles.shoppingScroll}
+          contentContainerStyle={styles.shoppingScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.shoppingCard}>
+            <Text style={styles.shoppingTitle}>{t('dietExercise')}</Text>
+            <Text style={styles.shoppingSubtitle}>{t('dietExerciseSubtitle')}</Text>
+            {(!dayPlan?.exercises || dayPlan.exercises.length === 0) ? (
+              <Text style={styles.shoppingEmpty}>{t('dietExerciseEmpty')}</Text>
+            ) : (
+              <View style={styles.shoppingList}>
+                {dayPlan.exercises.map((ex: DietExercise, i: number) => (
+                  <View key={i} style={styles.exerciseItem}>
+                    <View style={styles.exerciseIcon}>
+                      <Dumbbell size={20} color={Colors.primary} />
+                    </View>
+                    <View style={styles.exerciseContent}>
+                      <Text style={styles.exerciseName}>{ex.name}</Text>
+                      <Text style={styles.exerciseDuration}>{ex.duration}</Text>
+                      {ex.description && (
+                        <Text style={styles.exerciseDesc}>{ex.description}</Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </ScrollView>
       )}
 
       {/* Shopping List view */}
@@ -236,14 +275,12 @@ function MealCard({ meal, t }: { meal: DietMeal; t: (k: string) => string }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
   },
-  backBtn: { padding: Spacing.sm },
-  headerTitle: { ...Typography.h1, color: Colors.text, marginLeft: Spacing.sm },
+  headerTitle: { ...Typography.h1, color: Colors.text },
   emptyText: { ...Typography.body, color: Colors.textSecondary, textAlign: 'center', marginTop: 60 },
   daySelector: {
     flexDirection: 'row',
@@ -393,6 +430,41 @@ const styles = StyleSheet.create({
     ...Typography.captionMedium,
     color: Colors.primary,
     marginLeft: Spacing.md,
+  },
+  exerciseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface2,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.sm,
+  },
+  exerciseIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.primaryGlow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  exerciseContent: {
+    flex: 1,
+  },
+  exerciseName: {
+    ...Typography.bodyMedium,
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  exerciseDuration: {
+    ...Typography.captionMedium,
+    color: Colors.primary,
+    marginBottom: Spacing.xs,
+  },
+  exerciseDesc: {
+    ...Typography.small,
+    color: Colors.textSecondary,
   },
   createNewBtn: {
     marginTop: Spacing.xl,

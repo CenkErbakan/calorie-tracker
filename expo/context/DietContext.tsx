@@ -41,6 +41,13 @@ const DietPlanApiSchema = z.object({
       totalCarbs: z.number(),
       totalFat: z.number(),
       notes: z.string().optional(),
+      exercises: z.array(
+        z.object({
+          name: z.string(),
+          duration: z.string(),
+          description: z.string().optional(),
+        })
+      ).optional(),
     })
   ),
 });
@@ -147,6 +154,7 @@ Create a balanced 7-day plan. Each day should have:
 - Lunch (around 12:00-13:00)
 - Dinner (around 18:00-19:00)
 - 1-2 optional snacks (between meals)
+- exercises: 1-3 daily exercise suggestions (e.g. "30 min walk", "15 min stretching", "20 min light jog"). Simple, achievable activities. Include name and duration.
 
 CRITICAL: Daily total MUST be approximately ${targetCalories} kcal (range: ${targetCalories - 100} to ${targetCalories + 100}). This creates the ${kgPerMonth} kg/month deficit needed for the chosen speed.
 Macros: ~30% protein, 40% carbs, 30% fat.
@@ -175,7 +183,11 @@ Return ONLY valid JSON matching this structure:
       "totalProtein": 120,
       "totalCarbs": 180,
       "totalFat": 60,
-      "notes": "Optional day notes"
+      "notes": "Optional day notes",
+      "exercises": [
+        { "name": "Yürüyüş", "duration": "30 dakika", "description": "Orta tempoda yürüyüş" },
+        { "name": "Esneme", "duration": "10 dakika", "description": "Hafif esneme hareketleri" }
+      ]
     }
   ]
 }`,
@@ -201,6 +213,7 @@ Return ONLY valid JSON matching this structure:
             totalCarbs: d.totalCarbs,
             totalFat: d.totalFat,
             notes: d.notes,
+            exercises: d.exercises ?? [],
           })),
         };
 

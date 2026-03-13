@@ -35,6 +35,14 @@ export function getDietTargetCalories(maintenanceCalories: number, kgPerMonth: n
   return Math.max(1200, Math.min(5000, target));
 }
 
+// Günlük egzersiz önerisi
+export const DietExerciseSchema = z.object({
+  name: z.string(),
+  duration: z.string(), // örn: "30 dakika"
+  description: z.string().optional(),
+});
+export type DietExercise = z.infer<typeof DietExerciseSchema>;
+
 // Günlük öğün (saat ve içerik)
 export const DietMealSchema = z.object({
   time: z.string(), // HH:mm
@@ -58,6 +66,7 @@ export const DietDaySchema = z.object({
   totalCarbs: z.number(),
   totalFat: z.number(),
   notes: z.string().optional(),
+  exercises: z.array(DietExerciseSchema).optional(),
 });
 
 // Tam diyet programı
