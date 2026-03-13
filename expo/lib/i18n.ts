@@ -178,7 +178,7 @@ const trTranslations = {
   // Paywall
   premiumTitle: 'NutriLens Premium',
   premiumSubtitle: 'Sınırsız özelliklerle sağlıklı yaşam',
-  unlimitedScans: 'Günde sınırsız AI tarama',
+  unlimitedScans: 'Günde sınırsız kalori tarama',
   noAds: 'Reklamsız deneyim',
   advancedAnalytics: 'Gelişmiş analizler',
   detailedMacros: 'Detaylı makro takibi',
@@ -408,7 +408,7 @@ const enTranslations = {
   // Paywall
   premiumTitle: 'NutriLens Premium',
   premiumSubtitle: 'Healthy living with unlimited features',
-  unlimitedScans: 'Unlimited AI scans per day',
+  unlimitedScans: 'Unlimited calorie scans per day',
   noAds: 'Ad-free experience',
   advancedAnalytics: 'Advanced analytics',
   detailedMacros: 'Detailed macro tracking',

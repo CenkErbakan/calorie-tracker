@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -32,6 +33,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const router = useRouter();
   const { getTodaysMeals, getTodaysCalories, getTodaysMacros, deleteMeal } = useMeals();
@@ -66,12 +68,8 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
+      {/* Sabit üst başlık (İyi günler + tarih + Premium) */}
+      <View style={[styles.stickyHeader, { paddingTop: insets.top + Spacing.lg }]}>
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>{getGreeting()}</Text>
@@ -99,7 +97,13 @@ export default function HomeScreen() {
             </BlurView>
           </TouchableOpacity>
         </View>
+      </View>
 
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Calorie Ring */}
         <View style={styles.ringContainer}>
           <CalorieRing
@@ -386,18 +390,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  stickyHeader: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    backgroundColor: Colors.background,
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 60,
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: Spacing.xl,
   },
   greeting: {
     ...Typography.h3,
@@ -646,10 +654,10 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: Spacing.lg,
-    bottom: 100,
-    width: 60,
-    height: 60,
+    right: Spacing.xl,
+    bottom: 30,
+    width: 56,
+    height: 56,
     borderRadius: BorderRadius.full,
     overflow: 'hidden',
     ...Shadows.glow,
