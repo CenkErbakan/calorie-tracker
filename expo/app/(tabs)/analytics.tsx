@@ -108,7 +108,7 @@ export default function AnalyticsScreen() {
           <Text style={styles.premiumSubtitle}>{t('analyticsPremiumDesc')}</Text>
           <TouchableOpacity
             style={styles.upgradeButton}
-            onPress={() => router.push('/paywall/index' as never)}
+            onPress={() => router.push('/paywall')}
           >
             <LinearGradient
               colors={Colors.gradientPrimary}

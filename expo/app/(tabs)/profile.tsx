@@ -120,7 +120,7 @@ export default function ProfileScreen() {
           ) : (
             <TouchableOpacity
               style={styles.upgradeButton}
-              onPress={() => router.push('/paywall/index' as never)}
+              onPress={() => router.push('/paywall')}
             >
               <Text style={styles.upgradeText}>{t('goPremium')}</Text>
             </TouchableOpacity>
@@ -267,6 +267,24 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+
+        {/* Account */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('account')}</Text>
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={() => {
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/subscription');
+            }}
+          >
+            <View style={styles.actionIcon}>
+              <Crown size={20} color={Colors.primary} />
+            </View>
+            <Text style={styles.actionLabel}>{t('subscription')}</Text>
+            <ChevronRight size={20} color={Colors.textTertiary} />
+          </TouchableOpacity>
         </View>
 
         {/* Actions */}

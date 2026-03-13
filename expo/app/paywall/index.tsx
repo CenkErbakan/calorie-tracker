@@ -24,6 +24,7 @@ import {
   Clock,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { ActivityIndicator } from 'react-native';
 
 export default function PaywallScreen() {
   const { t } = useTranslation();
@@ -144,7 +145,7 @@ export default function PaywallScreen() {
                 <Text style={styles.planName}>{t('annualPlan')}</Text>
                 <View style={styles.saveBadge}>
                   <Text style={styles.saveText}>
-                    {t('savePercent', { percent: SUBSCRIPTION_PRICING.annual.savings })}
+                    {t('savePercent', { percent: SUBSCRIPTION_PRICING.annual.savingsPercent })}
                   </Text>
                 </View>
               </View>
@@ -199,7 +200,14 @@ export default function PaywallScreen() {
               colors={Colors.gradientPrimary}
               style={styles.ctaGradient}
             >
-              <Text style={styles.ctaText}>{t('startFreeTrial')}</Text>
+              {isLoading ? (
+                <View style={styles.ctaLoading}>
+                  <ActivityIndicator color="#FFFFFF" />
+                  <Text style={styles.ctaText}>{t('loading')}</Text>
+                </View>
+              ) : (
+                <Text style={styles.ctaText}>{t('startFreeTrial')}</Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
 
@@ -372,10 +380,10 @@ const styles = StyleSheet.create({
   },
   checkContainer: {
     position: 'absolute',
-    top: Spacing.lg,
+    bottom: Spacing.lg,
     right: Spacing.lg,
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     borderRadius: BorderRadius.full,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
@@ -390,6 +398,11 @@ const styles = StyleSheet.create({
   ctaGradient: {
     paddingVertical: Spacing.lg,
     alignItems: 'center',
+  },
+  ctaLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   ctaText: {
     ...Typography.h3,

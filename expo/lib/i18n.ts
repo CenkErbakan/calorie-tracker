@@ -198,6 +198,17 @@ const trTranslations = {
   perYear: '/yıl',
   oneTime: 'tek seferlik',
 
+  // Subscription screen extras
+  mySubscription: 'Aboneliğim',
+  upgradeForPremium: 'Premium özelliklere erişmek için yükseltin',
+  lifetimeAccess: 'Ömür boyu erişim',
+  expiresOn: 'Bitiş tarihi: {date}',
+  premiumBenefits: 'Premium Avantajları',
+  restorePurchasesHint: 'Önceki satın alımlarınızı geri yükleyin',
+  manageSubscriptionHint: 'Mağaza abonelik ayarlarını aç',
+  cancelSubscription: 'Aboneliği iptal et',
+  cancelSubscriptionConfirm: 'Aboneliğinizi iptal etmek istediğinize emin misiniz?',
+
   // Errors
   cameraPermission: 'Kamera izni gerekli',
   galleryPermission: 'Galeri izni gerekli',
@@ -402,6 +413,17 @@ const enTranslations = {
   perMonth: '/month',
   perYear: '/year',
   oneTime: 'one-time',
+
+  // Subscription screen extras
+  mySubscription: 'My Subscription',
+  upgradeForPremium: 'Upgrade to unlock premium features',
+  lifetimeAccess: 'Lifetime access',
+  expiresOn: 'Renews on {date}',
+  premiumBenefits: 'Premium Benefits',
+  restorePurchasesHint: 'Restore your previous purchases',
+  manageSubscriptionHint: 'Open store subscription settings',
+  cancelSubscription: 'Cancel Subscription',
+  cancelSubscriptionConfirm: 'Are you sure you want to cancel your subscription?',
 
   // Errors
   cameraPermission: 'Camera permission required',

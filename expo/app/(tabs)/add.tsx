@@ -132,7 +132,7 @@ export default function AddMealScreen() {
     if (!isPremium) {
       const canProceed = await useScan();
       if (!canProceed) {
-        router.push('/paywall/index' as never);
+        router.push('/paywall');
         return;
       }
     }

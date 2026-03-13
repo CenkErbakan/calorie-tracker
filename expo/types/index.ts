@@ -116,7 +116,7 @@ export const AD_SCANS_PER_DAY = 1;
 
 export const SUBSCRIPTION_PRICING = {
   monthly: { price: 4.99, priceString: '$4.99/month' },
-  annual: { price: 29.99, priceString: '$29.99/year', monthlyEquivalent: '$2.50/month', savings: '50%' },
+  annual: { price: 29.99, priceString: '$29.99/year', monthlyEquivalent: '$2.50/month', savingsPercent: 50 },
   lifetime: { price: 59.99, priceString: '$59.99 one-time' },
 } as const;
 

@@ -81,7 +81,11 @@ export default function HomeScreen() {
           </View>
           <TouchableOpacity
             style={styles.premiumBadge}
-            onPress={() => {if (!isPremium) {router.push('/paywall/index' as never);}}}
+            onPress={() => {
+              if (!isPremium) {
+                router.push('/paywall');
+              }
+            }}
           >
             <BlurView intensity={20} style={styles.premiumBlur}>
               {isPremium ? (
@@ -183,7 +187,7 @@ export default function HomeScreen() {
         {!isPremium && (
           <TouchableOpacity
             style={styles.banner}
-            onPress={() => router.push('/paywall/index' as never)}
+            onPress={() => router.push('/paywall')}
             activeOpacity={0.9}
           >
             <LinearGradient
