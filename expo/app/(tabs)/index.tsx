@@ -30,6 +30,7 @@ import {
   Trash2,
   Droplet,
   GlassWater,
+  Footprints,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
@@ -141,9 +142,18 @@ export default function HomeScreen() {
             value={burnedCalories}
             label={t('burned')}
             color={Colors.accentOrange}
-            subText={isAvailable ? `${todaysSteps.toLocaleString()} ${t('steps')}` : undefined}
           />
         </View>
+
+        {/* Steps - compact row */}
+        {isAvailable && (
+          <View style={styles.stepsRow}>
+            <Footprints size={16} color={Colors.accentOrange} />
+            <Text style={styles.stepsText}>
+              {todaysSteps.toLocaleString()} {t('steps')} · {burnedCalories} kcal
+            </Text>
+          </View>
+        )}
 
         {/* Macros Bar */}
         <View style={styles.macrosCard}>
@@ -342,13 +352,11 @@ function MiniStat({
   value,
   label,
   color,
-  subText,
 }: {
   icon: React.ReactNode;
   value: number;
   label: string;
   color: string;
-  subText?: string;
 }) {
   return (
     <View style={styles.miniStat}>
@@ -357,9 +365,6 @@ function MiniStat({
       </View>
       <Text style={styles.miniStatValue}>{value.toLocaleString()}</Text>
       <Text style={styles.miniStatLabel}>{label}</Text>
-      {subText && (
-        <Text style={styles.miniStatSubText}>{subText}</Text>
-      )}
     </View>
   );
 }
@@ -541,11 +546,23 @@ const styles = StyleSheet.create({
   miniStatLabel: {
     ...Typography.small,
     color: Colors.textSecondary,
+    textAlign: 'center',
   },
-  miniStatSubText: {
+  stepsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    marginHorizontal: 0,
+  },
+  stepsText: {
     ...Typography.small,
-    color: Colors.textTertiary,
-    marginTop: 2,
+    color: Colors.textSecondary,
   },
   statDivider: {
     width: 1,
