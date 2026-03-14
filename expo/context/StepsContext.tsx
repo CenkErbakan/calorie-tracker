@@ -20,6 +20,7 @@ interface StepsContextValue {
   burnedCalories: number;
   isAvailable: boolean;
   isLoading: boolean;
+  requestPermissions: () => Promise<void>;
 }
 
 export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(() => {
@@ -58,73 +59,88 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
     }
   }, []);
 
-  useEffect(() => {
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  const initPedometer = useCallback(async () => {
+    cleanupRef.current?.();
     let subscription: { remove: () => void } | null = null;
-
-    const init = async () => {
-      try {
-        const available = await Pedometer.isAvailableAsync();
-        setIsAvailable(available);
-
-        if (!available) {
-          setIsLoading(false);
-          return;
-        }
-
-        const perm = await Pedometer.requestPermissionsAsync();
-        if (!perm?.granted) {
-          setIsAvailable(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0);
-
-        lastDateRef.current = getTodayKey();
-
-        // iOS: getStepCountAsync gives today's total (no watch needed)
-        if (Platform.OS === 'ios') {
-          try {
-            const result = await Pedometer.getStepCountAsync(startOfToday, new Date());
-            if (result?.steps != null) {
-              setTodaysSteps(result.steps);
-              await saveSteps(result.steps);
-            }
-          } catch {
-            // Fallback to watchStepCount
-          }
-        }
-
-        // Android: watchStepCount (steps since subscription) + persisted base
-        if (Platform.OS !== 'ios') {
-          const storedSteps = await loadStoredSteps();
-          androidBaseRef.current = storedSteps;
-          if (storedSteps > 0) {
-            setTodaysSteps(storedSteps);
-          }
-
-          subscription = Pedometer.watchStepCount((result) => {
-            const steps = result?.steps ?? 0;
-            const newTotal = androidBaseRef.current + steps;
-            setTodaysSteps(newTotal);
-            void saveSteps(newTotal);
-          });
-        }
-      } catch (e) {
-        console.error('Pedometer init failed:', e);
-        setIsAvailable(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void init();
-
-    return () => {
+    const cleanup = () => {
       subscription?.remove();
     };
+
+    try {
+      const available = await Pedometer.isAvailableAsync();
+      setIsAvailable(available);
+
+      if (!available) {
+        setIsLoading(false);
+        return;
+      }
+
+      const perm = await Pedometer.requestPermissionsAsync();
+      if (!perm?.granted) {
+        setIsAvailable(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      lastDateRef.current = getTodayKey();
+
+      if (Platform.OS === 'ios') {
+        try {
+          const result = await Pedometer.getStepCountAsync(startOfToday, new Date());
+          if (result?.steps != null) {
+            setTodaysSteps(result.steps);
+            await saveSteps(result.steps);
+          }
+        } catch {
+          // Fallback to watchStepCount
+        }
+      }
+
+      if (Platform.OS !== 'ios') {
+        const storedSteps = await loadStoredSteps();
+        androidBaseRef.current = storedSteps;
+        if (storedSteps > 0) setTodaysSteps(storedSteps);
+        subscription = Pedometer.watchStepCount((result) => {
+          const steps = result?.steps ?? 0;
+          const newTotal = androidBaseRef.current + steps;
+          setTodaysSteps(newTotal);
+          void saveSteps(newTotal);
+        });
+      }
+      cleanupRef.current = cleanup;
+    } catch (e) {
+      console.error('Pedometer init failed:', e);
+      setIsAvailable(false);
+    } finally {
+      setIsLoading(false);
+    }
   }, [loadStoredSteps, saveSteps]);
+
+  const requestPermissions = useCallback(async () => {
+    if (isAvailable) return;
+    setIsLoading(true);
+    try {
+      const perm = await Pedometer.requestPermissionsAsync();
+      if (perm?.granted) {
+        await initPedometer();
+      } else {
+        setIsAvailable(false);
+      }
+    } catch (e) {
+      console.error('Pedometer permission failed:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isAvailable, initPedometer]);
+
+  useEffect(() => {
+    void initPedometer();
+    return () => cleanupRef.current?.();
+  }, [initPedometer]);
 
   // iOS: poll getStepCountAsync periodically for accurate count
   useEffect(() => {
@@ -173,8 +189,9 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
       burnedCalories,
       isAvailable,
       isLoading,
+      requestPermissions,
     }),
-    [todaysSteps, burnedCalories, isAvailable, isLoading]
+    [todaysSteps, burnedCalories, isAvailable, isLoading, requestPermissions]
   );
 
   return value;

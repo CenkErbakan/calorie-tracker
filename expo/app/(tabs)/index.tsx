@@ -45,7 +45,7 @@ export default function HomeScreen() {
   const { profile, getGreeting } = useUser();
   const { isPremium, remainingFreeScans, canScan } = useSubscription();
   const { todaysWaterMl, dailyGoalMl, addWater } = useWater();
-  const { todaysSteps, burnedCalories, isAvailable } = useSteps();
+  const { todaysSteps, burnedCalories, isAvailable, requestPermissions } = useSteps();
 
   const todaysMeals = getTodaysMeals();
   const consumed = getTodaysCalories();
@@ -145,15 +145,20 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Steps - compact row (her zaman göster, cihaz desteklemiyorsa bilgi ver) */}
-        <View style={styles.stepsRow}>
+        {/* Steps - compact row (kullanılamıyorsa tıklanınca izin iste) */}
+        <TouchableOpacity
+          style={styles.stepsRow}
+          onPress={() => !isAvailable && void requestPermissions()}
+          activeOpacity={isAvailable ? 1 : 0.7}
+          disabled={isAvailable}
+        >
           <Footprints size={16} color={Colors.accentOrange} />
           <Text style={styles.stepsText}>
             {isAvailable
               ? `${todaysSteps.toLocaleString()} ${t('steps')} · ${burnedCalories} kcal`
               : t('stepsNotAvailable')}
           </Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Macros Bar */}
         <View style={styles.macrosCard}>

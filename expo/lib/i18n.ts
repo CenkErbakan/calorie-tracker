@@ -276,7 +276,7 @@ const trTranslations = {
   waterIntake: 'Su Tüketimi',
   waterGlasses: 'bardak',
   steps: 'adım',
-  stepsNotAvailable: 'Bu cihazda adım sayacı kullanılamıyor',
+  stepsNotAvailable: 'İzin vermek için dokun',
 
   // Barcode & Scanner
   scan_tab: 'Ürün Tara',
@@ -580,7 +580,7 @@ const enTranslations = {
   waterIntake: 'Water Intake',
   waterGlasses: 'glasses',
   steps: 'steps',
-  stepsNotAvailable: 'Step counter not available on this device',
+  stepsNotAvailable: 'Tap to grant permission',
 
   // Barcode & Scanner
   scan_tab: 'Scan',
