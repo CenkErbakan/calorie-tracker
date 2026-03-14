@@ -145,15 +145,15 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Steps - compact row */}
-        {isAvailable && (
-          <View style={styles.stepsRow}>
-            <Footprints size={16} color={Colors.accentOrange} />
-            <Text style={styles.stepsText}>
-              {todaysSteps.toLocaleString()} {t('steps')} · {burnedCalories} kcal
-            </Text>
-          </View>
-        )}
+        {/* Steps - compact row (her zaman göster, cihaz desteklemiyorsa bilgi ver) */}
+        <View style={styles.stepsRow}>
+          <Footprints size={16} color={Colors.accentOrange} />
+          <Text style={styles.stepsText}>
+            {isAvailable
+              ? `${todaysSteps.toLocaleString()} ${t('steps')} · ${burnedCalories} kcal`
+              : t('stepsNotAvailable')}
+          </Text>
+        </View>
 
         {/* Macros Bar */}
         <View style={styles.macrosCard}>
