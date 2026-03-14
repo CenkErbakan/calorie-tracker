@@ -1,7 +1,7 @@
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import * as Pedometer from 'expo-sensors/build/Pedometer';
+import { Pedometer } from 'expo-sensors';
 import { AppState, Platform } from 'react-native';
 import { getTodayKey } from '@/types';
 import { useUser } from '@/context/UserContext';
