@@ -19,6 +19,7 @@ import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/
 import { Crown, ChevronRight, Globe, Ruler, Download, Trash2, UtensilsCrossed } from 'lucide-react-native';
 import { calculateDailyCalorieGoal, calculateAge } from '@/types';
 import * as Haptics from 'expo-haptics';
+import { clearAllData } from '@/lib/dataService';
 
 export default function ProfileScreen() {
   const { t, setLanguage, language } = useTranslation();
@@ -84,7 +85,18 @@ export default function ProfileScreen() {
       t('deleteAllDataConfirm'),
       [
         { text: t('cancel'), style: 'cancel' },
-        { text: t('delete'), style: 'destructive', onPress: () => {} },
+        {
+          text: t('delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await clearAllData();
+              Alert.alert(t('success'), t('deleteAllDataDone'));
+            } catch {
+              Alert.alert(t('error'), t('deleteAllDataError'));
+            }
+          },
+        },
       ]
     );
   };

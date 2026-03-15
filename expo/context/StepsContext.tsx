@@ -163,20 +163,31 @@ export const [StepsProvider, useSteps] = createContextHook<StepsContextValue>(()
     return () => clearInterval(interval);
   }, [isAvailable, saveSteps]);
 
-  // Gün değiştiğinde adımları sıfırla (uygulama arka planda kalıp yeni güne geçildiyse)
+  // Gün değiştiğinde adımları sıfırla ve pedometer'ı yeniden başlat
+  const checkDayChange = useCallback(async () => {
+    const today = getTodayKey();
+    if (lastDateRef.current !== today) {
+      lastDateRef.current = today;
+      androidBaseRef.current = 0;
+      setTodaysSteps(0);
+      await saveSteps(0);
+      await initPedometer(); // iOS: yeni gün için getStepCountAsync, Android: yeni subscription
+    }
+  }, [initPedometer, saveSteps]);
+
+  // 1) Uygulama öne geldiğinde kontrol
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
-      if (state !== 'active') return;
-      const today = getTodayKey();
-      if (lastDateRef.current !== today) {
-        lastDateRef.current = today;
-        androidBaseRef.current = 0;
-        setTodaysSteps(0);
-        void saveSteps(0);
-      }
+      if (state === 'active') checkDayChange();
     });
     return () => sub.remove();
-  }, [saveSteps]);
+  }, [checkDayChange]);
+
+  // 2) Uygulama açıkken gece yarısı geçerse: her dakika kontrol
+  useEffect(() => {
+    const interval = setInterval(checkDayChange, 60000);
+    return () => clearInterval(interval);
+  }, [checkDayChange]);
 
   const burnedCalories = useMemo(
     () => stepsToCalories(todaysSteps, weightKg),

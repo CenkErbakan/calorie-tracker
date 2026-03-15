@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -9,6 +10,8 @@ import { DietProvider } from '@/context/DietContext';
 import { WaterProvider } from '@/context/WaterContext';
 import { StepsProvider } from '@/context/StepsContext';
 import { Colors } from '@/constants/theme';
+
+SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
@@ -27,7 +30,9 @@ export default function RootLayout() {
                   headerShown: false,
                   contentStyle: { backgroundColor: Colors.background },
                 }}
+                initialRouteName="index"
               >
+                <Stack.Screen name="index" />
                 <Stack.Screen name="onboarding" />
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="paywall" />
