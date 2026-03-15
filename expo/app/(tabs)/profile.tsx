@@ -11,10 +11,11 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '@/context/UserContext';
-import type { Gender } from '@/types';
+import type { Gender, ActivityLevel, Goal } from '@/types';
+import { ACTIVITY_LEVELS, GOALS } from '@/types';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useMeals } from '@/context/MealsContext';
-import { useTranslation, Language } from '@/lib/i18n';
+import { useTranslation, Language, i18n } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { Crown, ChevronRight, Globe, Ruler, Download, Trash2, UtensilsCrossed } from 'lucide-react-native';
 import { calculateDailyCalorieGoal, calculateAge } from '@/types';
@@ -204,6 +205,57 @@ export default function ProfileScreen() {
                 onChange={(text) => setEditedProfile({ ...editedProfile, weightKg: parseInt(text) || 0 })}
                 keyboardType="numeric"
               />
+
+              <View style={styles.editField}>
+                <Text style={styles.editLabel}>{t('activityLevel')}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.activityScroll} contentContainerStyle={styles.activityScrollContent}>
+                  {ACTIVITY_LEVELS.map((level) => (
+                    <TouchableOpacity
+                      key={level.value}
+                      style={[
+                        styles.chipButton,
+                        editedProfile.activityLevel === level.value && styles.chipButtonActive,
+                      ]}
+                      onPress={() => setEditedProfile({ ...editedProfile, activityLevel: level.value })}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          editedProfile.activityLevel === level.value && styles.chipTextActive,
+                        ]}
+                      >
+                        {t(level.labelKey as Parameters<typeof i18n.t>[0])}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={styles.editField}>
+                <Text style={styles.editLabel}>{t('goal')}</Text>
+                <View style={styles.goalChips}>
+                  {GOALS.map((g) => (
+                    <TouchableOpacity
+                      key={g.value}
+                      style={[
+                        styles.chipButton,
+                        editedProfile.goal === g.value && styles.chipButtonActive,
+                      ]}
+                      onPress={() => setEditedProfile({ ...editedProfile, goal: g.value })}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          editedProfile.goal === g.value && styles.chipTextActive,
+                        ]}
+                      >
+                        {t(g.labelKey as Parameters<typeof i18n.t>[0])}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
               <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <LinearGradient colors={Colors.gradientPrimary} style={styles.saveGradient}>
                   <Text style={styles.saveText}>{t('save')}</Text>
@@ -217,6 +269,14 @@ export default function ProfileScreen() {
               <InfoItem label={t('gender')} value={t(profile.gender)} />
               <InfoItem label={t('height')} value={`${profile.heightCm} cm`} />
               <InfoItem label={t('weight')} value={`${profile.weightKg} kg`} />
+              <InfoItem
+                label={t('activityLevel')}
+                value={t((ACTIVITY_LEVELS.find((l) => l.value === profile.activityLevel)?.labelKey ?? 'moderatelyActive') as Parameters<typeof i18n.t>[0])}
+              />
+              <InfoItem
+                label={t('goal')}
+                value={t((GOALS.find((g) => g.value === profile.goal)?.labelKey ?? 'maintainWeight') as Parameters<typeof i18n.t>[0])}
+              />
             </View>
           )}
         </View>
@@ -595,6 +655,36 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     ...Typography.body,
     color: Colors.text,
+  },
+  activityScroll: {
+    marginHorizontal: -Spacing.lg,
+  },
+  activityScrollContent: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  goalChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  chipButton: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.surface2,
+  },
+  chipButtonActive: {
+    backgroundColor: Colors.primaryGlow,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  chipText: {
+    ...Typography.captionMedium,
+    color: Colors.textSecondary,
+  },
+  chipTextActive: {
+    color: Colors.primary,
   },
   saveButton: {
     borderRadius: BorderRadius.lg,
