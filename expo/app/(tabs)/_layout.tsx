@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet, Platform } from 'react-native';
-import { Colors, BorderRadius, Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { useTranslation } from '@/lib/i18n';
 import { Home, User, UtensilsCrossed, MessageCircle, MoreHorizontal } from 'lucide-react-native';
 
@@ -20,7 +20,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: t('home'),
           tabBarIcon: ({ color, size }) => (

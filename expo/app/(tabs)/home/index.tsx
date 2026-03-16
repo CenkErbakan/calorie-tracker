@@ -35,8 +35,6 @@ import {
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
 
-
-
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -45,7 +43,7 @@ export default function HomeScreen() {
   const { profile, getGreeting } = useUser();
   const { isPremium, remainingFreeScans, canScan, canEarnMoreAdScans, watchAdForScan } = useSubscription();
   const [isAdLoading, setIsAdLoading] = useState(false);
-  const { todaysWaterMl, dailyGoalMl, addWater } = useWater();
+  const { todaysWaterMl, addWater } = useWater();
   const { todaysSteps, burnedCalories, isAvailable, requestPermissions } = useSteps();
 
   const todaysMeals = getTodaysMeals();
@@ -92,7 +90,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Sabit üst başlık (İyi günler + tarih + Premium) */}
       <View style={[styles.stickyHeader, { paddingTop: insets.top + Spacing.lg }]}>
         <View style={styles.header}>
           <View>
@@ -128,17 +125,13 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Calorie Ring */}
         <View style={styles.ringContainer}>
           <CalorieRing
             progress={progress}
             remaining={remaining}
-            consumed={consumed}
-            goal={goal}
           />
         </View>
 
-        {/* Mini Stats */}
         <View style={styles.statsRow}>
           <MiniStat
             icon={<Flame size={18} color={Colors.accent} />}
@@ -162,7 +155,6 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Steps - compact row (kullanılamıyorsa tıklanınca izin iste) */}
         <TouchableOpacity
           style={styles.stepsRow}
           onPress={() => !isAvailable && void requestPermissions()}
@@ -177,7 +169,6 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Macros Bar */}
         <View style={styles.macrosCard}>
           <MacroBar
             label={t('protein')}
@@ -199,7 +190,6 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Water Tracker - Bardak bardak */}
         <View style={styles.waterCard}>
           <View style={styles.waterHeader}>
             <Droplet size={20} color={Colors.accentBlue} />
@@ -243,7 +233,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Meals List */}
         <View style={styles.mealsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('todaysMeals')}</Text>
@@ -270,7 +259,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Free User Banner - Reklam izle veya Premium */}
         {!isPremium && (
           <TouchableOpacity
             style={styles.banner}
@@ -309,11 +297,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Bottom Spacing for FAB */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Floating Action Button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={handleAddMeal}
@@ -336,8 +322,6 @@ function CalorieRing({
 }: {
   progress: number;
   remaining: number;
-  consumed?: number;
-  goal?: number;
 }) {
   const { t } = useTranslation();
   const size = 220;
@@ -384,7 +368,6 @@ function MiniStat({
   icon,
   value,
   label,
-  color,
 }: {
   icon: React.ReactNode;
   value: number;
@@ -393,7 +376,7 @@ function MiniStat({
 }) {
   return (
     <View style={styles.miniStat}>
-      <View style={[styles.miniStatIcon, { backgroundColor: `${color}20` }]}>
+      <View style={[styles.miniStatIcon, { backgroundColor: `${Colors.surface2}` }]}>
         {icon}
       </View>
       <Text style={styles.miniStatValue}>{value.toLocaleString()}</Text>
@@ -420,8 +403,8 @@ function MacroBar({
       <View style={styles.macroHeader}>
         <Text style={styles.macroLabel}>{label}</Text>
         <Text style={styles.macroValues}>
-        <Text style={[styles.macroCurrent, { color }]}>{Number(current).toFixed(1)}g</Text>
-        <Text style={styles.macroGoal}> / {Number(goal).toFixed(1)}g</Text>
+          <Text style={[styles.macroCurrent, { color }]}>{Number(current).toFixed(1)}g</Text>
+          <Text style={styles.macroGoal}> / {Number(goal).toFixed(1)}g</Text>
         </Text>
       </View>
       <View style={styles.macroBarBg}>
