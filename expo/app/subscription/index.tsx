@@ -34,16 +34,16 @@ export default function SubscriptionScreen() {
   const planLabel = useMemo(() => {
     if (!subscription.plan) return t('freePlan');
     if (subscription.plan === 'monthly') return t('monthlyPlan');
+    if (subscription.plan === 'quarterly') return t('quarterlyPlan');
     if (subscription.plan === 'annual') return t('annualPlan');
-    return t('lifetimePlan');
+    return subscription.plan;
   }, [subscription.plan, t]);
 
   const expiryText = useMemo(() => {
     if (!isPremium) return null;
-    if (subscription.plan === 'lifetime') return t('lifetimeAccess');
     if (!subscription.expiryDate) return null;
     return t('expiresOn', { date: formatDate(new Date(subscription.expiryDate), 'PPP') });
-  }, [isPremium, subscription.plan, subscription.expiryDate, t]);
+  }, [isPremium, subscription.expiryDate, t]);
 
   const handleGoPremium = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

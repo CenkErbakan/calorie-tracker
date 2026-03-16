@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserProvider } from '@/context/UserContext';
 import { initializeAds } from '@/lib/ads';
+import { initializeRevenueCat } from '@/lib/revenuecat';
 import { MealsProvider } from '@/context/MealsContext';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { DietProvider } from '@/context/DietContext';
@@ -20,6 +21,7 @@ const queryClient = new QueryClient();
 export default function RootLayout() {
   useEffect(() => {
     void initializeAds();
+    void initializeRevenueCat();
   }, []);
 
   return (

@@ -102,7 +102,7 @@ export const DEFAULT_PROFILE: UserProfile = {
 // ============== SUBSCRIPTION TYPES ==============
 
 export type SubscriptionTier = 'free' | 'premium';
-export type SubscriptionPlan = 'monthly' | 'annual' | 'lifetime';
+export type SubscriptionPlan = 'monthly' | 'quarterly' | 'annual';
 
 export interface Subscription {
   tier: SubscriptionTier;
@@ -123,9 +123,9 @@ export const FREE_DAILY_SCANS = 1;
 export const AD_SCANS_PER_DAY = 10; // günlük reklam izleyerek kazanılabilecek max tarama
 
 export const SUBSCRIPTION_PRICING = {
-  monthly: { price: 4.99, priceString: '$4.99/month' },
-  annual: { price: 29.99, priceString: '$29.99/year', monthlyEquivalent: '$2.50/month', savingsPercent: 50 },
-  lifetime: { price: 59.99, priceString: '$59.99 one-time' },
+  monthly: { price: 4.99, priceString: '$4.99/ay', monthlyEquivalent: '$4.99/ay' },
+  quarterly: { price: 9.99, priceString: '$9.99/3 ay', monthlyEquivalent: '$3.33/ay', savingsPercent: 33 },
+  annual: { price: 29.99, priceString: '$29.99/yıl', monthlyEquivalent: '$2.50/ay', savingsPercent: 50 },
 } as const;
 
 // ============== APP SETTINGS TYPES ==============

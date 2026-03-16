@@ -30,7 +30,7 @@ export default function PaywallScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { upgradeToPremium, restorePurchases } = useSubscription();
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('annual');
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('quarterly');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
@@ -39,6 +39,8 @@ export default function PaywallScreen() {
     try {
       await upgradeToPremium(selectedPlan);
       router.back();
+    } catch {
+      // Kullanıcı iptal etti veya hata - sessizce devam et
     } finally {
       setIsLoading(false);
     }
@@ -81,6 +83,7 @@ export default function PaywallScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Hero */}
           <View style={styles.hero}>
@@ -129,18 +132,48 @@ export default function PaywallScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Annual Plan - Featured */}
+            {/* Quarterly Plan - Featured */}
             <TouchableOpacity
               style={[
                 styles.planCard,
                 styles.planCardFeatured,
-                selectedPlan === 'annual' && styles.planCardActive,
+                selectedPlan === 'quarterly' && styles.planCardActive,
               ]}
-              onPress={() => setSelectedPlan('annual')}
+              onPress={() => setSelectedPlan('quarterly')}
             >
               <View style={styles.bestValueBadge}>
                 <Text style={styles.bestValueText}>{t('bestValue')}</Text>
               </View>
+              <View style={styles.planHeader}>
+                <Text style={styles.planName}>{t('quarterlyPlan')}</Text>
+                <View style={styles.saveBadge}>
+                  <Text style={styles.saveText}>
+                    {t('savePercent', { percent: SUBSCRIPTION_PRICING.quarterly.savingsPercent })}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.planPrice}>
+                ${SUBSCRIPTION_PRICING.quarterly.price}
+                <Text style={styles.planPeriod}>{t('per3Months')}</Text>
+              </Text>
+              <Text style={styles.monthlyEquivalent}>
+                {SUBSCRIPTION_PRICING.quarterly.monthlyEquivalent} {t('perMonth')}
+              </Text>
+              {selectedPlan === 'quarterly' && (
+                <View style={styles.checkContainer}>
+                  <Check size={20} color={Colors.primary} />
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Annual Plan */}
+            <TouchableOpacity
+              style={[
+                styles.planCard,
+                selectedPlan === 'annual' && styles.planCardActive,
+              ]}
+              onPress={() => setSelectedPlan('annual')}
+            >
               <View style={styles.planHeader}>
                 <Text style={styles.planName}>{t('annualPlan')}</Text>
                 <View style={styles.saveBadge}>
@@ -162,34 +195,9 @@ export default function PaywallScreen() {
                 </View>
               )}
             </TouchableOpacity>
-
-            {/* Lifetime Plan */}
-            <TouchableOpacity
-              style={[
-                styles.planCard,
-                selectedPlan === 'lifetime' && styles.planCardActive,
-              ]}
-              onPress={() => setSelectedPlan('lifetime')}
-            >
-              <View style={styles.planHeader}>
-                <Text style={styles.planName}>{t('lifetimePlan')}</Text>
-                <Text style={[styles.planLabel, { color: Colors.accent }]}>
-                  {t('limitedOffer')}
-                </Text>
-              </View>
-              <Text style={styles.planPrice}>
-                ${SUBSCRIPTION_PRICING.lifetime.price}
-                <Text style={styles.planPeriod}>{t('oneTime')}</Text>
-              </Text>
-              {selectedPlan === 'lifetime' && (
-                <View style={styles.checkContainer}>
-                  <Check size={20} color={Colors.primary} />
-                </View>
-              )}
-            </TouchableOpacity>
           </View>
 
-          {/* CTA Button */}
+          {/* Aboneliği Al - Paketlerin hemen altında */}
           <TouchableOpacity
             style={styles.ctaButton}
             onPress={handleSubscribe}
@@ -206,14 +214,13 @@ export default function PaywallScreen() {
                   <Text style={styles.ctaText}>{t('loading')}</Text>
                 </View>
               ) : (
-                <Text style={styles.ctaText}>{t('startFreeTrial')}</Text>
+                <Text style={styles.ctaText}>{t('getSubscription')}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
-
           <Text style={styles.ctaSubtext}>{t('cancelAnytime')}</Text>
 
-          {/* Footer Links */}
+          {/* Satın alımları geri yükle, Gizlilik, Koşullar */}
           <View style={styles.footer}>
             <TouchableOpacity onPress={handleRestore}>
               <Text style={styles.footerLink}>{t('restorePurchases')}</Text>
@@ -310,7 +317,7 @@ const styles = StyleSheet.create({
   },
   plansContainer: {
     gap: Spacing.md,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   planCard: {
     backgroundColor: Colors.surface,
@@ -392,7 +399,7 @@ const styles = StyleSheet.create({
   ctaButton: {
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
     ...Shadows.glow,
   },
   ctaGradient: {
@@ -412,13 +419,14 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textSecondary,
     textAlign: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     flexWrap: 'wrap',
+    marginTop: Spacing.sm,
   },
   footerLink: {
     ...Typography.captionMedium,

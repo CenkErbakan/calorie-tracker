@@ -5,6 +5,12 @@ import { Subscription, ScanQuota, FREE_DAILY_SCANS, AD_SCANS_PER_DAY, Subscripti
 import { getTodayKey } from '@/types';
 import { useUser } from '@/context/UserContext';
 import { showRewardedAd } from '@/lib/ads';
+import {
+  checkPremiumStatus,
+  purchasePlan,
+  restorePurchases as rcRestorePurchases,
+  type RevenueCatPlan,
+} from '@/lib/revenuecat';
 
 const VIP_NAMES = ['cenk', 'serkan'];
 
@@ -74,18 +80,27 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
 
   const loadData = async () => {
     try {
-      const [subData, quotaData] = await Promise.all([
+      const [subData, quotaData, rcPremium] = await Promise.all([
         AsyncStorage.getItem(SUBSCRIPTION_KEY),
         AsyncStorage.getItem(SCAN_QUOTA_KEY),
+        checkPremiumStatus(),
       ]);
 
-      if (subData) {
+      // RevenueCat premium ise öncelikli
+      if (rcPremium) {
+        setSubscription({
+          tier: 'premium',
+          plan: 'annual',
+          expiryDate: null,
+          isTrial: false,
+          trialEndDate: null,
+        });
+      } else if (subData) {
         setSubscription({ ...DEFAULT_SUBSCRIPTION, ...JSON.parse(subData) });
       }
 
       if (quotaData) {
         const parsed = JSON.parse(quotaData);
-        // Check if it's a new day
         const today = getTodayKey();
         if (parsed.date !== today) {
           setScanQuota({ date: today, scans: 0, adScans: 0, adScansUsed: 0 });
@@ -129,27 +144,22 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   }, [scanQuota.date]);
 
   const upgradeToPremium = useCallback(async (plan: SubscriptionPlan) => {
-    // Simulate purchase - in production, use RevenueCat
-    const now = Date.now();
-    let expiryDate: number | null = null;
+    const rcPlan = plan as RevenueCatPlan;
+    const success = await purchasePlan(rcPlan);
 
-    if (plan === 'monthly') {
-      expiryDate = now + 30 * 24 * 60 * 60 * 1000;
-    } else if (plan === 'annual') {
-      expiryDate = now + 365 * 24 * 60 * 60 * 1000;
+    if (success) {
+      const newSubscription: Subscription = {
+        tier: 'premium',
+        plan,
+        expiryDate: null,
+        isTrial: false,
+        trialEndDate: null,
+      };
+      setSubscription(newSubscription);
+      await saveSubscription(newSubscription);
+    } else {
+      throw new Error('Purchase failed');
     }
-    // Lifetime has no expiry
-
-    const newSubscription: Subscription = {
-      tier: 'premium',
-      plan,
-      expiryDate,
-      isTrial: false,
-      trialEndDate: null,
-    };
-
-    setSubscription(newSubscription);
-    await saveSubscription(newSubscription);
   }, []);
 
   const watchAdForScan = useCallback(async (): Promise<boolean> => {
@@ -207,9 +217,24 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   }, [subscription.tier, isVipUser, scanQuota, checkAndResetDailyQuota]);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
-    // Simulate restore - in production, use RevenueCat
-    // For now, just return false (no purchases to restore)
-    return false;
+    const success = await rcRestorePurchases();
+    if (success) {
+      setSubscription({
+        tier: 'premium',
+        plan: 'annual',
+        expiryDate: null,
+        isTrial: false,
+        trialEndDate: null,
+      });
+      await saveSubscription({
+        tier: 'premium',
+        plan: 'annual',
+        expiryDate: null,
+        isTrial: false,
+        trialEndDate: null,
+      });
+    }
+    return success;
   }, []);
 
   const cancelSubscription = useCallback(async () => {
@@ -219,10 +244,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
 
   const isPremium = useMemo(() => {
     if (isVipUser) return true;
-    if (subscription.tier !== 'premium') return false;
-    if (subscription.plan === 'lifetime') return true;
-    if (subscription.expiryDate && subscription.expiryDate > Date.now()) return true;
-    return false;
+    return subscription.tier === 'premium';
   }, [subscription, isVipUser]);
 
   const remainingFreeScans = useMemo(() => {
