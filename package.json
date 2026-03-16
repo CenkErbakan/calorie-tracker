@@ -1,0 +1,11 @@
+{
+  "name": "rork-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd expo && bun run start",
+    "start:tunnel": "cd expo && bun run start:tunnel",
+    "start-web": "cd expo && bun run start-web",
+    "lint": "cd expo && bun run lint"
+  }
+}
