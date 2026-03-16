@@ -3,8 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "postinstall": "node expo/scripts/patch-metro-watcher.js",
-    "start": "node expo/scripts/start-lan.js",
+    "postinstall": "node scripts/patch-metro-watcher.js",
+    "start": "node scripts/start-lan.js",
     "start:tunnel": "bunx rork start -p tha7reg68ka2lobf1vtb9 --tunnel",
     "start-web": "bunx rork start -p tha7reg68ka2lobf1vtb9 --web --tunnel",
     "start-web-dev": "DEBUG=expo* bunx rork start -p tha7reg68ka2lobf1vtb9 --web --tunnel",

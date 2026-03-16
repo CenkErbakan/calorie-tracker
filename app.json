@@ -5,12 +5,12 @@
     "slug": "tha7reg68ka2lobf1vtb9",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./expo/assets/images/icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "rork-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./expo/assets/images/splash-icon.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0A0F1E"
     },
@@ -24,7 +24,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./expo/assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "app.rork.tha7reg68ka2lobf1vtb9",
@@ -34,7 +34,7 @@
       ]
     },
     "web": {
-      "favicon": "./expo/assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       [
