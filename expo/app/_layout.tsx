@@ -38,7 +38,6 @@ export default function RootLayout() {
                   headerShown: false,
                   contentStyle: { backgroundColor: Colors.background },
                 }}
-                initialRouteName="index"
               >
                 <Stack.Screen name="index" />
                 <Stack.Screen name="onboarding" />
@@ -46,7 +45,6 @@ export default function RootLayout() {
                 <Stack.Screen name="paywall" />
                 <Stack.Screen name="subscription" />
                 <Stack.Screen name="meal/[id]" />
-                <Stack.Screen name="add" options={{ presentation: 'modal' }} />
                 <Stack.Screen name="barcode-scanner" />
                 <Stack.Screen name="product-detail" />
                 <Stack.Screen name="medicine-detail" />
