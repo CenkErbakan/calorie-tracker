@@ -2,7 +2,7 @@
   "apps": [
     {
       "name": "CalorieAI",
-      "path": ".",
+      "path": "expo",
       "framework": "react-native"
     }
   ]
