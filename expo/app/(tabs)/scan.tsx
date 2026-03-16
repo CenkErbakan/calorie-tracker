@@ -19,6 +19,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
+import { useSubscription } from '@/context/SubscriptionContext';
 import {
   fetchProductByBarcode,
   getRecentScans,
@@ -33,12 +34,14 @@ import {
   Search,
   Apple,
 } from 'lucide-react-native';
+import { PremiumGate } from '@/components/PremiumGate';
 
 type FlashState = 'none' | 'success' | 'error';
 
 export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isPremium } = useSubscription();
 
   const [permission, requestPermission] = useCameraPermissions();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -147,6 +150,15 @@ export default function ScanScreen() {
     setManualBarcode('');
     setScanned(false);
   };
+
+  /* ── Premium değil ── */
+  if (!isPremium) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top + Spacing.lg }]}>
+        <PremiumGate titleKey="scanPremiumTitle" subtitleKey="scanPremiumDesc" />
+      </View>
+    );
+  }
 
   /* ── Kamera izni yok ── */
   if (hasPermission === false) {

@@ -34,6 +34,7 @@ import {
   type Message,
 } from '@/lib/chatService';
 import { Trash2, ArrowUp, UserRound } from 'lucide-react-native';
+import { PremiumGate } from '@/components/PremiumGate';
 
 // ── Suggestion chips ─────────────────────────────────────────────────────────
 
@@ -350,6 +351,14 @@ export default function ChatScreen() {
     const msg = item as Message;
     return <MessageBubble message={msg} onRetry={msg.isError ? handleRetry : undefined} />;
   };
+
+  if (!isPremium) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <PremiumGate titleKey="chatPremiumTitle" subtitleKey="chatPremiumDesc" />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

@@ -18,7 +18,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.rork.tha7reg68ka2lobf1vtb9",
       "infoPlist": {
-        "NSCameraUsageDescription": "Kamera, barkod tarama ve yemek foto\u011fraf\u0131 \u00e7ekmek i\u00e7in kullan\u0131l\u0131r."
+        "NSCameraUsageDescription": "Kamera, barkod tarama ve yemek fotoğrafı çekmek için kullanılır.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -42,11 +43,23 @@
           "origin": "https://rork.com/"
         }
       ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-2088222165570955~6791050571"
+        }
+      ],
       "expo-font",
       "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://rork.com/"
+      }
     }
   }
 }

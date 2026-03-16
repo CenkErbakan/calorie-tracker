@@ -8,9 +8,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDiet } from '@/context/DietContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { ChevronLeft, ChevronRight, Clock, Utensils, ShoppingCart, Dumbbell } from 'lucide-react-native';
+import { PremiumGate } from '@/components/PremiumGate';
 import * as Haptics from 'expo-haptics';
 import { getShoppingListFromPlan } from '@/types/diet';
 import type { DietDay, DietMeal, DietExercise } from '@/types/diet';
@@ -27,11 +29,21 @@ type ViewMode = 'plan' | 'shopping' | 'exercise';
 export default function DietPlanScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { isPremium } = useSubscription();
   const { plan, getPlanForDay, clearPlan } = useDiet();
+
   const [dayIndex, setDayIndex] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('plan');
 
   const shoppingList = plan ? getShoppingListFromPlan(plan) : [];
+
+  if (!isPremium) {
+    return (
+      <View style={styles.container}>
+        <PremiumGate titleKey="dietPremiumTitle" subtitleKey="dietPremiumDesc" />
+      </View>
+    );
+  }
 
   if (!plan) {
     return (

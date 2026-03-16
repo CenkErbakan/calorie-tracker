@@ -15,7 +15,8 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { useTranslation } from '@/lib/i18n';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
 import { format, subDays, isSameDay } from 'date-fns';
-import { Crown, Lock, Flame, Target } from 'lucide-react-native';
+import { Flame, Target } from 'lucide-react-native';
+import { PremiumGate } from '@/components/PremiumGate';
 import * as Haptics from 'expo-haptics';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 
@@ -96,29 +97,7 @@ export default function AnalyticsScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{t('analytics')}</Text>
         </View>
-        
-        <View style={styles.premiumGate}>
-          <LinearGradient
-            colors={Colors.gradientGold}
-            style={styles.lockIconContainer}
-          >
-            <Lock size={40} color="#FFFFFF" />
-          </LinearGradient>
-          <Text style={styles.premiumTitle}>{t('analyticsPremiumTitle')}</Text>
-          <Text style={styles.premiumSubtitle}>{t('analyticsPremiumDesc')}</Text>
-          <TouchableOpacity
-            style={styles.upgradeButton}
-            onPress={() => router.push('/paywall')}
-          >
-            <LinearGradient
-              colors={Colors.gradientPrimary}
-              style={styles.upgradeGradient}
-            >
-              <Crown size={20} color="#FFFFFF" />
-              <Text style={styles.upgradeText}>{t('goPremium')}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        <PremiumGate titleKey="analyticsPremiumTitle" subtitleKey="analyticsPremiumDesc" />
       </View>
     );
   }

@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserProvider } from '@/context/UserContext';
+import { initializeAds } from '@/lib/ads';
 import { MealsProvider } from '@/context/MealsContext';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { DietProvider } from '@/context/DietContext';
@@ -16,6 +18,10 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  useEffect(() => {
+    void initializeAds();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

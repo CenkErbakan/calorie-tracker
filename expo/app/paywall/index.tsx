@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import * as Haptics from 'expo-haptics';
 import {
   View,
   Text,
@@ -23,7 +24,6 @@ import {
   Download,
   Clock,
 } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { ActivityIndicator } from 'react-native';
 
 export default function PaywallScreen() {

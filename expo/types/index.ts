@@ -114,12 +114,13 @@ export interface Subscription {
 
 export interface ScanQuota {
   date: string; // YYYY-MM-DD
-  scans: number;
-  adScans: number;
+  scans: number; // free scans used
+  adScans: number; // ad scans earned today
+  adScansUsed?: number; // ad scans consumed (for backward compat, default 0)
 }
 
 export const FREE_DAILY_SCANS = 1;
-export const AD_SCANS_PER_DAY = 1;
+export const AD_SCANS_PER_DAY = 10; // günlük reklam izleyerek kazanılabilecek max tarama
 
 export const SUBSCRIPTION_PRICING = {
   monthly: { price: 4.99, priceString: '$4.99/month' },

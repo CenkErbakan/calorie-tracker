@@ -1,4 +1,4 @@
-
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -43,7 +43,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const { getTodaysMeals, getTodaysCalories, getTodaysMacros, deleteMeal } = useMeals();
   const { profile, getGreeting } = useUser();
-  const { isPremium, remainingFreeScans, canScan } = useSubscription();
+  const { isPremium, remainingFreeScans, canScan, canEarnMoreAdScans, watchAdForScan } = useSubscription();
+  const [isAdLoading, setIsAdLoading] = useState(false);
   const { todaysWaterMl, dailyGoalMl, addWater } = useWater();
   const { todaysSteps, burnedCalories, isAvailable, requestPermissions } = useSteps();
 
@@ -71,6 +72,22 @@ export default function HomeScreen() {
   const handleDeleteMeal = async (mealId: string) => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     await deleteMeal(mealId);
+  };
+
+  const handleBannerPress = async () => {
+    if (remainingFreeScans > 0 || !canEarnMoreAdScans) {
+      router.push('/paywall');
+      return;
+    }
+    setIsAdLoading(true);
+    try {
+      const earned = await watchAdForScan();
+      if (earned) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } finally {
+      setIsAdLoading(false);
+    }
   };
 
   return (
@@ -253,12 +270,13 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Free User Banner */}
+        {/* Free User Banner - Reklam izle veya Premium */}
         {!isPremium && (
           <TouchableOpacity
             style={styles.banner}
-            onPress={() => router.push('/paywall')}
+            onPress={handleBannerPress}
             activeOpacity={0.9}
+            disabled={isAdLoading}
           >
             <LinearGradient
               colors={['rgba(0, 212, 170, 0.1)', 'rgba(0, 212, 170, 0.05)']}
@@ -268,13 +286,23 @@ export default function HomeScreen() {
                 <Text style={styles.bannerText}>
                   {remainingFreeScans > 0
                     ? t('freeScanRemaining')
-                    : t('watchAdForScan')}
+                    : canEarnMoreAdScans
+                      ? t('watchAdForScan')
+                      : t('noMoreScansToday')}
                 </Text>
                 <View style={styles.bannerButton}>
-                  <Text style={styles.bannerButtonText}>
-                    {remainingFreeScans > 0 ? t('goPremium') : t('watchAd')}
-                  </Text>
-                  <ChevronRight size={16} color={Colors.primary} />
+                  {isAdLoading ? (
+                    <Text style={styles.bannerButtonText}>{t('loading')}</Text>
+                  ) : (
+                    <>
+                      <Text style={styles.bannerButtonText}>
+                        {remainingFreeScans > 0 || !canEarnMoreAdScans
+                          ? t('goPremium')
+                          : t('watchAd')}
+                      </Text>
+                      <ChevronRight size={16} color={Colors.primary} />
+                    </>
+                  )}
                 </View>
               </View>
             </LinearGradient>

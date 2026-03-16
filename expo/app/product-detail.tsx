@@ -7,7 +7,9 @@ import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/
 import type { ProductData, NutritionInfo } from '@/lib/barcodeService';
 import { calculateNutrition, fetchProductByBarcode } from '@/lib/barcodeService';
 import { useMeals } from '@/context/MealsContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import { useTranslation } from '@/lib/i18n';
+import { PremiumGate } from '@/components/PremiumGate';
 import { ChevronLeft, ScanLine } from 'lucide-react-native';
 
 const PLACEHOLDER_IMAGE_URI =
@@ -17,6 +19,7 @@ export default function ProductDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { addMeal } = useMeals();
+  const { isPremium } = useSubscription();
   const { t } = useTranslation();
 
   const params = useLocalSearchParams<{ product?: string; barcode?: string }>();
@@ -77,6 +80,15 @@ export default function ProductDetailScreen() {
     setNutrition(calculateNutrition(product, p));
     setName(product.name);
   }, [product]);
+
+  // Premium gate
+  if (!isPremium) {
+    return (
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <PremiumGate titleKey="scanPremiumTitle" subtitleKey="scanPremiumDesc" />
+      </View>
+    );
+  }
 
   // Loading state
   if (isFetching) {

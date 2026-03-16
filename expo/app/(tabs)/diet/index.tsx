@@ -23,6 +23,7 @@ import {
   type DietWizardData,
 } from '@/types/diet';
 import { ChevronRight, ChevronLeft, Scale, Zap, AlertCircle, ThumbsDown } from 'lucide-react-native';
+import { PremiumGate } from '@/components/PremiumGate';
 import * as Haptics from 'expo-haptics';
 
 const STEPS = 4;
@@ -117,6 +118,14 @@ export default function DietWizardScreen() {
     arr.splice(index, 1);
     setData({ ...data, [list]: arr });
   };
+
+  if (!isPremium) {
+    return (
+      <View style={[styles.container, styles.loadingCenter]}>
+        <PremiumGate titleKey="dietPremiumTitle" subtitleKey="dietPremiumDesc" />
+      </View>
+    );
+  }
 
   if (isLoading) {
     return (

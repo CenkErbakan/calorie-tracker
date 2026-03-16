@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Subscription, ScanQuota, FREE_DAILY_SCANS, AD_SCANS_PER_DAY, SubscriptionPlan } from '@/types';
 import { getTodayKey } from '@/types';
 import { useUser } from '@/context/UserContext';
+import { showRewardedAd } from '@/lib/ads';
 
 const VIP_NAMES = ['cenk', 'serkan'];
 
@@ -17,6 +18,7 @@ interface SubscriptionContextValue {
   isPremium: boolean;
   remainingFreeScans: number;
   remainingAdScans: number;
+  canEarnMoreAdScans: boolean;
   canScan: boolean;
   upgradeToPremium: (plan: SubscriptionPlan) => Promise<void>;
   watchAdForScan: () => Promise<boolean>;
@@ -38,6 +40,7 @@ const DEFAULT_SCAN_QUOTA: ScanQuota = {
   date: getTodayKey(),
   scans: 0,
   adScans: 0,
+  adScansUsed: 0,
 };
 
 export const [SubscriptionProvider, useSubscription] = createContextHook<SubscriptionContextValue>(() => {
@@ -60,7 +63,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     const checkInterval = setInterval(() => {
       const today = getTodayKey();
       if (scanQuota.date !== today) {
-        const newQuota = { date: today, scans: 0, adScans: 0 };
+        const newQuota = { date: today, scans: 0, adScans: 0, adScansUsed: 0 };
         setScanQuota(newQuota);
         void saveScanQuota(newQuota);
       }
@@ -85,9 +88,12 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
         // Check if it's a new day
         const today = getTodayKey();
         if (parsed.date !== today) {
-          setScanQuota({ date: today, scans: 0, adScans: 0 });
+          setScanQuota({ date: today, scans: 0, adScans: 0, adScansUsed: 0 });
         } else {
-          setScanQuota(parsed);
+          setScanQuota({
+            ...parsed,
+            adScansUsed: parsed.adScansUsed ?? 0,
+          });
         }
       }
     } catch (error) {
@@ -152,12 +158,13 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     await checkAndResetDailyQuota();
 
     if (scanQuota.adScans < AD_SCANS_PER_DAY) {
-      // Simulate ad watching
-      await new Promise(resolve => setTimeout(resolve, 5000)); // 5s simulated ad
+      const earned = await showRewardedAd();
+      if (!earned) return false;
 
       const newQuota = {
         ...scanQuota,
         adScans: scanQuota.adScans + 1,
+        adScansUsed: scanQuota.adScansUsed ?? 0,
       };
       setScanQuota(newQuota);
       await saveScanQuota(newQuota);
@@ -172,10 +179,24 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
 
     await checkAndResetDailyQuota();
 
+    // Önce ücretsiz hakkı kullan
     if (scanQuota.scans < FREE_DAILY_SCANS) {
       const newQuota = {
         ...scanQuota,
         scans: scanQuota.scans + 1,
+        adScansUsed: scanQuota.adScansUsed ?? 0,
+      };
+      setScanQuota(newQuota);
+      await saveScanQuota(newQuota);
+      return true;
+    }
+
+    // Ücretsiz hakkı bittiyse reklam izleyerek kazanılan hakkı kullan
+    const adAvailable = (scanQuota.adScans ?? 0) - (scanQuota.adScansUsed ?? 0);
+    if (adAvailable > 0) {
+      const newQuota = {
+        ...scanQuota,
+        adScansUsed: (scanQuota.adScansUsed ?? 0) + 1,
       };
       setScanQuota(newQuota);
       await saveScanQuota(newQuota);
@@ -211,13 +232,20 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
 
   const remainingAdScans = useMemo(() => {
     if (isPremium) return Infinity;
-    return Math.max(0, AD_SCANS_PER_DAY - scanQuota.adScans);
+    const earned = scanQuota.adScans ?? 0;
+    const used = scanQuota.adScansUsed ?? 0;
+    return Math.max(0, earned - used);
+  }, [isPremium, scanQuota.adScans, scanQuota.adScansUsed]);
+
+  const canEarnMoreAdScans = useMemo(() => {
+    if (isPremium) return false;
+    return (scanQuota.adScans ?? 0) < AD_SCANS_PER_DAY;
   }, [isPremium, scanQuota.adScans]);
 
   const canScan = useMemo(() => {
     if (isPremium) return true;
-    return remainingFreeScans > 0 || remainingAdScans > 0;
-  }, [isPremium, remainingFreeScans, remainingAdScans]);
+    return remainingFreeScans > 0 || remainingAdScans > 0 || canEarnMoreAdScans;
+  }, [isPremium, remainingFreeScans, remainingAdScans, canEarnMoreAdScans]);
 
   const value = useMemo(() => ({
     subscription,
@@ -226,6 +254,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     isPremium,
     remainingFreeScans,
     remainingAdScans,
+    canEarnMoreAdScans,
     canScan,
     upgradeToPremium,
     watchAdForScan,
@@ -233,7 +262,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     restorePurchases,
     cancelSubscription,
     checkAndResetDailyQuota,
-  }), [subscription, scanQuota, isLoading, isPremium, remainingFreeScans, remainingAdScans, canScan, upgradeToPremium, watchAdForScan, useScan, restorePurchases, cancelSubscription, checkAndResetDailyQuota]);
+  }), [subscription, scanQuota, isLoading, isPremium, remainingFreeScans, remainingAdScans, canEarnMoreAdScans, canScan, upgradeToPremium, watchAdForScan, useScan, restorePurchases, cancelSubscription, checkAndResetDailyQuota]);
 
   return value;
 });
