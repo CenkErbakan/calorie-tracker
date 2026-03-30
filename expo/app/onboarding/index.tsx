@@ -57,7 +57,7 @@ export default function OnboardingScreen() {
   const handleComplete = async () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await completeOnboarding(data);
-    router.replace('/(tabs)');
+    router.replace('/(tabs)/home');
   };
 
   const canProceed = () => {

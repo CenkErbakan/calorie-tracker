@@ -12,8 +12,6 @@ import {
   type RevenueCatPlan,
 } from '@/lib/revenuecat';
 
-const VIP_NAMES = ['cenk', 'serkan'];
-
 const SUBSCRIPTION_KEY = '@nutrilens_subscription';
 const SCAN_QUOTA_KEY = '@nutrilens_scan_quota';
 
@@ -54,11 +52,6 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   const [subscription, setSubscription] = useState<Subscription>(DEFAULT_SUBSCRIPTION);
   const [scanQuota, setScanQuota] = useState<ScanQuota>(DEFAULT_SCAN_QUOTA);
   const [isLoading, setIsLoading] = useState(true);
-
-  const isVipUser = useMemo(() => {
-    const name = profile.name?.trim().toLowerCase() ?? '';
-    return VIP_NAMES.includes(name);
-  }, [profile.name]);
 
   useEffect(() => {
     void loadData();
@@ -163,7 +156,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   }, []);
 
   const watchAdForScan = useCallback(async (): Promise<boolean> => {
-    if (subscription.tier === 'premium' || isVipUser) return true;
+    if (subscription.tier === 'premium') return true;
 
     await checkAndResetDailyQuota();
 
@@ -182,10 +175,10 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     }
 
     return false;
-  }, [subscription.tier, isVipUser, scanQuota, checkAndResetDailyQuota]);
+  }, [subscription.tier, scanQuota, checkAndResetDailyQuota]);
 
   const useScan = useCallback(async (): Promise<boolean> => {
-    if (subscription.tier === 'premium' || isVipUser) return true;
+    if (subscription.tier === 'premium') return true;
 
     await checkAndResetDailyQuota();
 
@@ -214,7 +207,7 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
     }
 
     return false;
-  }, [subscription.tier, isVipUser, scanQuota, checkAndResetDailyQuota]);
+  }, [subscription.tier, scanQuota, checkAndResetDailyQuota]);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     const success = await rcRestorePurchases();
@@ -243,9 +236,8 @@ export const [SubscriptionProvider, useSubscription] = createContextHook<Subscri
   }, []);
 
   const isPremium = useMemo(() => {
-    if (isVipUser) return true;
     return subscription.tier === 'premium';
-  }, [subscription, isVipUser]);
+  }, [subscription]);
 
   const remainingFreeScans = useMemo(() => {
     if (isPremium) return Infinity;
