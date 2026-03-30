@@ -30,6 +30,13 @@
       "expo-web-browser",
       "expo-localization",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Kamera, barkod tarama ve yemek fotoğrafı çekerek analiz yapabilmeniz için kullanılır.",
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
         "react-native-google-mobile-ads",
         {
           "iosAppId": "ca-app-pub-2088222165570955~6791050571"
