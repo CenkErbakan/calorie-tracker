@@ -122,10 +122,47 @@ export interface ScanQuota {
 export const FREE_DAILY_SCANS = 1;
 export const AD_SCANS_PER_DAY = 10; // günlük reklam izleyerek kazanılabilecek max tarama
 
+/** Aylık plan referans; tasarruf = aynı süre için aylık fiyatla ödeme yerine paket farkı. */
+const MONTHLY_REF = 49.9;
+const quarterlyVsMonthly = MONTHLY_REF * 3;
+const annualVsMonthly = MONTHLY_REF * 12;
+
 export const SUBSCRIPTION_PRICING = {
-  monthly: { price: 4.99, priceString: '$4.99/ay', monthlyEquivalent: '$4.99/ay' },
-  quarterly: { price: 9.99, priceString: '$9.99/3 ay', monthlyEquivalent: '$3.33/ay', savingsPercent: 33 },
-  annual: { price: 29.99, priceString: '$29.99/yıl', monthlyEquivalent: '$2.50/ay', savingsPercent: 50 },
+  monthly: { price: 49.9, priceString: '₺49.90/ay', monthlyEquivalent: '₺49.90' },
+  quarterly: {
+    price: 139.99,
+    priceString: '₺139.99/3 ay',
+    monthlyEquivalent: '₺46.66',
+    savingsPercent: Math.round(((quarterlyVsMonthly - 139.99) / quarterlyVsMonthly) * 100),
+  },
+  annual: {
+    price: 499.99,
+    priceString: '₺499.99/yıl',
+    monthlyEquivalent: '₺41.67',
+    savingsPercent: Math.round(((annualVsMonthly - 499.99) / annualVsMonthly) * 100),
+  },
+} as const;
+
+/**
+ * Mağaza fiyatı (RevenueCat) gelene kadar yalnızca yedek gösterim için — ABD Tier’a yakın örnek tutarlar.
+ * Gerçek satış fiyatı her zaman kullanıcının App Store bölgesinden gelir; ülke listesini koda taşımaya gerek yok.
+ */
+const USD_MONTHLY_REF = 4.99;
+const USD_QUARTERLY = 12.99;
+const USD_ANNUAL = 29.99;
+const usQuarterlyVsMonthly = USD_MONTHLY_REF * 3;
+const usAnnualVsMonthly = USD_MONTHLY_REF * 12;
+
+export const PAYWALL_FALLBACK_US = {
+  monthly: { price: USD_MONTHLY_REF },
+  quarterly: {
+    price: USD_QUARTERLY,
+    savingsPercent: Math.round(((usQuarterlyVsMonthly - USD_QUARTERLY) / usQuarterlyVsMonthly) * 100),
+  },
+  annual: {
+    price: USD_ANNUAL,
+    savingsPercent: Math.round(((usAnnualVsMonthly - USD_ANNUAL) / usAnnualVsMonthly) * 100),
+  },
 } as const;
 
 // ============== APP SETTINGS TYPES ==============

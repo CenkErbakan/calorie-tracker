@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -82,6 +83,8 @@ export default function HomeScreen() {
       const earned = await watchAdForScan();
       if (earned) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        Alert.alert(t('premium'), t('adLoadFailed'));
       }
     } finally {
       setIsAdLoading(false);

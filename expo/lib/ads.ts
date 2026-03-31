@@ -46,20 +46,57 @@ async function getAdsModule(): Promise<typeof import('react-native-google-mobile
   }
 }
 
-// Use TestIds for development. Replace with your real IDs for production.
-const REWARDED_AD_UNIT_ID = __DEV__
-  ? undefined // Will use TestIds.REWARDED from module
-  : Platform.select({
-      android: 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY',
-      ios: 'ca-app-pub-2088222165570955~6791050571',
-      default: undefined,
-    });
+/**
+ * Rewarded / banner birim ID'leri `ca-app-pub-XXXX/YYYY` (slash) olmalı.
+ * `ca-app-pub-XXXX~YYYY` App ID'dir — reklam birimi olarak kullanılamaz.
+ */
+const ADMOB_IOS_REWARDED_ENV = process.env.EXPO_PUBLIC_ADMOB_IOS_REWARDED_UNIT_ID;
+const ADMOB_ANDROID_REWARDED_ENV = process.env.EXPO_PUBLIC_ADMOB_ANDROID_REWARDED_UNIT_ID;
+
+/** NutriLens iOS ödüllü reklam birimi (AdMob). App ID `~6791050571` app.json plugin’de; bu satır slash’lı birimdir. */
+const NUTRILENS_IOS_REWARDED_UNIT_ID = 'ca-app-pub-2088222165570955/3844170023';
+
+const GOOGLE_TEST_REWARDED_ANDROID = 'ca-app-pub-3940256099942544/5224354917';
+
+function isValidAdUnitId(id: string | undefined): id is string {
+  return !!id && id.includes('/') && !id.includes('~');
+}
+
+function resolveRewardedAdUnitId(): string | undefined {
+  if (__DEV__) return undefined;
+
+  if (Platform.OS === 'ios') {
+    if (isValidAdUnitId(ADMOB_IOS_REWARDED_ENV)) return ADMOB_IOS_REWARDED_ENV;
+    if (ADMOB_IOS_REWARDED_ENV?.includes('~')) {
+      console.warn(
+        '[AdMob] EXPO_PUBLIC_ADMOB_IOS_REWARDED_UNIT_ID App ID gibi görünüyor (~). Rewarded birim ID’si .../... formatında olmalı.',
+      );
+    }
+    return NUTRILENS_IOS_REWARDED_UNIT_ID;
+  }
+
+  if (Platform.OS === 'android') {
+    if (isValidAdUnitId(ADMOB_ANDROID_REWARDED_ENV)) return ADMOB_ANDROID_REWARDED_ENV;
+    console.warn(
+      '[AdMob] EXPO_PUBLIC_ADMOB_ANDROID_REWARDED_UNIT_ID yok; test rewarded kullanılıyor.',
+    );
+    return GOOGLE_TEST_REWARDED_ANDROID;
+  }
+
+  return undefined;
+}
+
+const REWARDED_AD_UNIT_ID = resolveRewardedAdUnitId();
 
 const BANNER_AD_UNIT_ID = __DEV__
   ? undefined
   : Platform.select({
-      android: 'ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY',
-      ios: 'ca-app-pub-2088222165570955~6791050571',
+      android: isValidAdUnitId(process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID)
+        ? process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID
+        : undefined,
+      ios: isValidAdUnitId(process.env.EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID)
+        ? process.env.EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID
+        : undefined,
       default: undefined,
     });
 
@@ -102,6 +139,7 @@ export async function showRewardedAd(): Promise<boolean> {
 
   return new Promise((resolve) => {
     let resolved = false;
+    let rewardEarned = false;
     const unsubs: (() => void)[] = [];
     const finish = (result: boolean) => {
       if (!resolved) {
@@ -118,10 +156,10 @@ export async function showRewardedAd(): Promise<boolean> {
         rewarded.addAdEventsListener(({ type, payload }) => {
           switch (type) {
             case mod.RewardedAdEventType.EARNED_REWARD:
-              finish(true);
+              rewardEarned = true;
               break;
             case mod.AdEventType.CLOSED:
-              finish(false);
+              finish(rewardEarned);
               break;
             case mod.AdEventType.ERROR:
               console.warn('Rewarded ad error:', payload);
@@ -141,7 +179,7 @@ export async function showRewardedAd(): Promise<boolean> {
 
       rewarded.load();
 
-      const timeout = setTimeout(() => finish(false), 15000);
+      const timeout = setTimeout(() => finish(rewardEarned), 45000);
       unsubs.push(() => clearTimeout(timeout));
     } catch (error) {
       console.warn('Rewarded ad failed:', error);

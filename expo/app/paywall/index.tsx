@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { getLocales } from 'expo-localization';
 import * as Haptics from 'expo-haptics';
 import {
   View,
@@ -7,13 +8,20 @@ import {
   TouchableOpacity,
   ScrollView,
   Linking,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from '@/lib/i18n';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/theme';
-import { SubscriptionPlan, SUBSCRIPTION_PRICING } from '@/types';
+import { SubscriptionPlan } from '@/types';
+import { fetchPaywallStorePrices } from '@/lib/revenuecat';
+import {
+  computeFallbackPaywallPrices,
+  pickPaywallFallbackRegion,
+  type PaywallPriceDisplay,
+} from '@/lib/paywallPricing';
 import {
   Crown,
   Check,
@@ -27,20 +35,46 @@ import {
 import { ActivityIndicator } from 'react-native';
 
 export default function PaywallScreen() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const router = useRouter();
   const { upgradeToPremium, restorePurchases } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('quarterly');
   const [isLoading, setIsLoading] = useState(false);
 
+  const localeTag = useMemo(() => getLocales()[0]?.languageTag ?? 'en-US', []);
+
+  const [prices, setPrices] = useState<PaywallPriceDisplay>(() =>
+    computeFallbackPaywallPrices(pickPaywallFallbackRegion(language), localeTag)
+  );
+
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      const store = await fetchPaywallStorePrices(localeTag);
+      if (!alive) return;
+      if (store) {
+        setPrices(store);
+      } else {
+        setPrices(computeFallbackPaywallPrices(pickPaywallFallbackRegion(language), localeTag));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [localeTag, language]);
+
   const handleSubscribe = async () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsLoading(true);
     try {
-      await upgradeToPremium(selectedPlan);
-      router.back();
+      const result = await upgradeToPremium(selectedPlan);
+      if (result === 'success') {
+        router.back();
+      } else if (result === 'failed') {
+        Alert.alert(t('subscription'), t('purchaseFailed'));
+      }
     } catch {
-      // Kullanıcı iptal etti veya hata - sessizce devam et
+      Alert.alert(t('subscription'), t('purchaseFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +156,7 @@ export default function PaywallScreen() {
                 <Text style={styles.planLabel}>{t('mostFlexible')}</Text>
               </View>
               <Text style={styles.planPrice}>
-                ${SUBSCRIPTION_PRICING.monthly.price}
+                {prices.monthlyMain}
                 <Text style={styles.planPeriod}>{t('perMonth')}</Text>
               </Text>
               {selectedPlan === 'monthly' && (
@@ -148,16 +182,16 @@ export default function PaywallScreen() {
                 <Text style={styles.planName}>{t('quarterlyPlan')}</Text>
                 <View style={styles.saveBadge}>
                   <Text style={styles.saveText}>
-                    {t('savePercent', { percent: SUBSCRIPTION_PRICING.quarterly.savingsPercent })}
+                    {t('savePercent', { percent: prices.quarterlySavingsPercent })}
                   </Text>
                 </View>
               </View>
               <Text style={styles.planPrice}>
-                ${SUBSCRIPTION_PRICING.quarterly.price}
+                {prices.quarterlyMain}
                 <Text style={styles.planPeriod}>{t('per3Months')}</Text>
               </Text>
               <Text style={styles.monthlyEquivalent}>
-                {SUBSCRIPTION_PRICING.quarterly.monthlyEquivalent} {t('perMonth')}
+                {prices.quarterlyPerMonth} {t('perMonth')}
               </Text>
               {selectedPlan === 'quarterly' && (
                 <View style={styles.checkContainer}>
@@ -178,16 +212,16 @@ export default function PaywallScreen() {
                 <Text style={styles.planName}>{t('annualPlan')}</Text>
                 <View style={styles.saveBadge}>
                   <Text style={styles.saveText}>
-                    {t('savePercent', { percent: SUBSCRIPTION_PRICING.annual.savingsPercent })}
+                    {t('savePercent', { percent: prices.annualSavingsPercent })}
                   </Text>
                 </View>
               </View>
               <Text style={styles.planPrice}>
-                ${SUBSCRIPTION_PRICING.annual.price}
+                {prices.annualMain}
                 <Text style={styles.planPeriod}>{t('perYear')}</Text>
               </Text>
               <Text style={styles.monthlyEquivalent}>
-                {SUBSCRIPTION_PRICING.annual.monthlyEquivalent} {t('perMonth')}
+                {prices.annualPerMonth} {t('perMonth')}
               </Text>
               {selectedPlan === 'annual' && (
                 <View style={styles.checkContainer}>
