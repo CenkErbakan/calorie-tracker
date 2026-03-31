@@ -150,11 +150,29 @@ export async function showRewardedAd(): Promise<boolean> {
     };
 
     try {
-      const rewarded = mod.RewardedAd.createForAdRequest(adUnitId);
+      const rewarded = mod.RewardedAd.createForAdRequest(adUnitId, {
+        requestNonPersonalizedAdsOnly: false,
+      });
+
+      let showCalled = false;
+      const tryShow = () => {
+        if (showCalled || resolved) return;
+        showCalled = true;
+        try {
+          void rewarded.show();
+        } catch (e) {
+          console.warn('Rewarded ad show() hatası:', e);
+          finish(false);
+        }
+      };
 
       unsubs.push(
         rewarded.addAdEventsListener(({ type, payload }) => {
           switch (type) {
+            case mod.RewardedAdEventType.LOADED:
+            case mod.AdEventType.LOADED:
+              tryShow();
+              break;
             case mod.RewardedAdEventType.EARNED_REWARD:
               rewardEarned = true;
               break;
@@ -168,12 +186,6 @@ export async function showRewardedAd(): Promise<boolean> {
             default:
               break;
           }
-        }),
-      );
-
-      unsubs.push(
-        rewarded.addAdEventListener(mod.RewardedAdEventType.LOADED, () => {
-          void rewarded.show();
         }),
       );
 

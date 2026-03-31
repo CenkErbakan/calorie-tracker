@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import type { PurchasesOfferings, PurchasesOffering } from 'react-native-purchases';
 import { formatStoreMoney, type PaywallPriceDisplay } from '@/lib/paywallPricing';
 
 export type RevenueCatPlan = 'monthly' | 'quarterly' | 'annual';
@@ -7,7 +8,16 @@ export type RevenueCatPlan = 'monthly' | 'quarterly' | 'annual';
 const REVENUECAT_API_KEY =
   process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || 'appl_rRUSKXTjZaorfXDoAVNBtLrEXvp';
 
+/** RevenueCat entitlement identifier — dashboard ile birebir aynı olmalı. */
 const ENTITLEMENT_ID = 'Nutrilens Premium';
+
+const PREMIUM_ENTITLEMENT_IDS = [ENTITLEMENT_ID, 'NutriLens Premium'] as const;
+
+function hasPremiumEntitlement(customerInfo: { entitlements: { active: Record<string, unknown> } } | null): boolean {
+  if (!customerInfo) return false;
+  const active = customerInfo.entitlements.active;
+  return PREMIUM_ENTITLEMENT_IDS.some((id) => !!active[id]);
+}
 
 /** RevenueCat varsayılan paket adları (offering’de böyle tanımlıysa önce bunlar aranır). */
 const PACKAGE_IDS: Record<RevenueCatPlan, string> = {
@@ -31,6 +41,20 @@ function findOfferingPackage<T extends { identifier: string; product: { identifi
   if (byRc) return byRc;
   const storeId = APP_STORE_PRODUCT_IDS[plan];
   return availablePackages.find((p) => p.product.identifier === storeId);
+}
+
+/**
+ * `current` boş bırakılmışsa veya paket yoksa `offerings.all` içinden paketi olan ilk offering’i kullanır.
+ */
+function resolveOfferingWithPackages(offerings: PurchasesOfferings | null): PurchasesOffering | null {
+  if (!offerings) return null;
+  if (offerings.current?.availablePackages?.length) return offerings.current;
+  const all = offerings.all ?? {};
+  for (const key of Object.keys(all)) {
+    const o = all[key];
+    if (o?.availablePackages?.length) return o;
+  }
+  return null;
 }
 
 let purchasesModule: typeof import('react-native-purchases') | null = null;
@@ -77,7 +101,7 @@ export async function getCurrentOffering() {
 
   try {
     const offerings = await Purchases.default.getOfferings();
-    return offerings.current ?? null;
+    return resolveOfferingWithPackages(offerings);
   } catch (error) {
     console.warn('❌ Offering alınamadı:', error);
     return null;
@@ -145,7 +169,7 @@ export async function checkPremiumStatus(): Promise<boolean> {
 
   if (!customerInfo) return false;
 
-  return !!customerInfo.entitlements.active[ENTITLEMENT_ID];
+  return hasPremiumEntitlement(customerInfo);
 }
 
 export type PurchasePlanResult = 'success' | 'cancelled' | 'failed';
@@ -156,10 +180,10 @@ export async function purchasePlan(plan: RevenueCatPlan): Promise<PurchasePlanRe
 
   try {
     const offerings = await Purchases.default.getOfferings();
-    const currentOffering = offerings.current;
+    const currentOffering = resolveOfferingWithPackages(offerings);
 
     if (!currentOffering) {
-      console.warn('❌ Current offering bulunamadı');
+      console.warn('❌ RevenueCat’te paket içeren offering yok (current ve all boş).');
       return 'failed';
     }
 
@@ -182,13 +206,20 @@ export async function purchasePlan(plan: RevenueCatPlan): Promise<PurchasePlanRe
 
     const purchaseResult = await Purchases.default.purchasePackage(selectedPackage);
 
-    const isPremium = !!purchaseResult.customerInfo.entitlements.active[ENTITLEMENT_ID];
+    const isPremium = hasPremiumEntitlement(purchaseResult.customerInfo);
 
     if (isPremium) {
       console.log(`✅ Satın alma başarılı: ${plan}`);
       return 'success';
     }
 
+    const activeEntitlements = purchaseResult.customerInfo.entitlements.active;
+    console.warn(
+      'Satın alma tamamlandı ama premium entitlement görünmüyor. RevenueCat’te ürün bu entitlement’a bağlı mı? Beklenen:',
+      PREMIUM_ENTITLEMENT_IDS.join(' veya '),
+      'Aktif anahtarlar:',
+      Object.keys(activeEntitlements),
+    );
     return 'failed';
   } catch (error: any) {
     if (error?.userCancelled) {
@@ -207,7 +238,7 @@ export async function restorePurchases(): Promise<boolean> {
 
   try {
     const customerInfo = await Purchases.default.restorePurchases();
-    const isPremium = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
+    const isPremium = hasPremiumEntitlement(customerInfo);
 
     if (isPremium) {
       console.log('✅ Satın alımlar geri yüklendi');

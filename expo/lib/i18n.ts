@@ -228,8 +228,9 @@ const trTranslations = {
   changePlan: 'Planı Değiştir',
   restoreNotFound: 'Geri yüklenecek satın alım bulunamadı',
   purchaseFailed:
-    "Satın alma tamamlanamadı. İnternetinizi kontrol edin; ürünler App Store Connect ve RevenueCat'te current offering ile eşleşmeli.",
-  adLoadFailed: 'Reklam yüklenemedi veya ödül verilemedi. Biraz sonra tekrar deneyin.',
+    'Satın alma tamamlanamadı. App Store ile giriş yaptığınızdan emin olun, birkaç dakika sonra tekrar deneyin. Sorun sürerse uygulamayı kapatıp açın.',
+  adLoadFailed:
+    'Reklam açılamadı. Wi‑Fi veya mobil veriyi kontrol edip tekrar deneyin. Yeni AdMob hesaplarında reklamın dolması bir süre alabilir.',
 
   // Form placeholders
   dateFormatPlaceholder: 'GG/AA/YYYY',
@@ -550,8 +551,9 @@ const enTranslations = {
   changePlan: 'Change Plan',
   restoreNotFound: 'No purchases to restore found',
   purchaseFailed:
-    'Purchase could not be completed. Check your connection; products must be linked in App Store Connect and match the RevenueCat current offering packages.',
-  adLoadFailed: 'The ad could not load or the reward was not granted. Please try again later.',
+    'Purchase could not be completed. Make sure you are signed in to the App Store and try again in a few minutes.',
+  adLoadFailed:
+    'The ad could not be shown. Check your connection and try again. New AdMob apps can take a while to start receiving ads.',
 
   // Form placeholders
   dateFormatPlaceholder: 'DD/MM/YYYY',
