@@ -12,10 +12,7 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_SHOW_DEVICE_LOGS": "1"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {

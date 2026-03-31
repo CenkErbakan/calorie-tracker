@@ -19,7 +19,6 @@ import {
   type RevenueCatPlan,
   type PurchasePlanResult,
 } from '@/lib/revenuecat';
-import { appendOnDeviceLog } from '@/lib/onDeviceLog';
 
 const SUBSCRIPTION_KEY = '@nutrilens_subscription';
 const SCAN_QUOTA_KEY = '@nutrilens_scan_quota';
@@ -201,7 +200,6 @@ export const [SubscriptionProvider, useSubscription] =
 
           const result = await purchasePlan(rcPlan);
           console.log('[NutriLens/Sub] upgradeToPremium sonuç', { plan, result });
-          appendOnDeviceLog('Sub', 'upgradeToPremium sonuç', { plan, result });
 
           if (result === 'success') {
             const premiumSub: Subscription = {
@@ -229,7 +227,6 @@ export const [SubscriptionProvider, useSubscription] =
           return result;
         } catch (error) {
           console.error('Premium upgrade hatası:', error);
-          appendOnDeviceLog('Sub⚠️', 'upgradeToPremium hata:', error);
           return 'failed';
         }
       },
@@ -242,9 +239,7 @@ export const [SubscriptionProvider, useSubscription] =
       await checkAndResetDailyQuota();
 
       if (scanQuota.adScans < AD_SCANS_PER_DAY) {
-        appendOnDeviceLog('Sub', 'watchAdForScan – reklam gösteriliyor');
         const earned = await showRewardedAd();
-        appendOnDeviceLog('Sub', 'watchAdForScan sonuç ödül:', earned);
         if (!earned) return false;
 
         const newQuota: ScanQuota = {
@@ -296,9 +291,7 @@ export const [SubscriptionProvider, useSubscription] =
 
     const restorePurchases = useCallback(async (): Promise<boolean> => {
       try {
-        appendOnDeviceLog('Sub', 'restorePurchases başladı');
         const success = await rcRestorePurchases();
-        appendOnDeviceLog('Sub', 'restorePurchases sonuç:', success);
 
         if (success) {
           const customerInfo = await getCustomerInfo();
@@ -319,7 +312,6 @@ export const [SubscriptionProvider, useSubscription] =
         return success;
       } catch (error) {
         console.error('Restore purchases hatası:', error);
-        appendOnDeviceLog('Sub⚠️', 'restorePurchases hata:', error);
         return false;
       }
     }, [saveSubscription]);
