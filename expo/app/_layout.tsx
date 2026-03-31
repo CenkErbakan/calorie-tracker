@@ -42,8 +42,8 @@ export default function RootLayout() {
                 <Stack.Screen name="index" />
                 <Stack.Screen name="onboarding" />
                 <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="paywall" />
-                <Stack.Screen name="subscription" />
+                <Stack.Screen name="paywall/index" />
+                <Stack.Screen name="subscription/index" />
                 <Stack.Screen name="meal/[id]" />
                 <Stack.Screen name="barcode-scanner" />
                 <Stack.Screen name="product-detail" />

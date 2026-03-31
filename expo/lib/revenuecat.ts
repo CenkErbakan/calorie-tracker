@@ -5,6 +5,28 @@ import { formatStoreMoney, type PaywallPriceDisplay } from '@/lib/paywallPricing
 
 export type RevenueCatPlan = 'monthly' | 'quarterly' | 'annual';
 
+/** Metro / Expo konsolunda ara: NutriLens/Sub */
+const SUB = '[NutriLens/Sub]';
+
+function subLog(...args: unknown[]) {
+  console.log(SUB, ...args);
+}
+
+function subWarn(...args: unknown[]) {
+  console.warn(SUB, ...args);
+}
+
+function logPurchaseError(err: unknown) {
+  const e = err as Record<string, unknown> | null;
+  subWarn('StoreKit/RevenueCat hata:', {
+    message: e?.message,
+    code: e?.code,
+    readableErrorCode: e?.readableErrorCode,
+    userCancelled: e?.userCancelled,
+    underlyingErrorMessage: e?.underlyingErrorMessage,
+  });
+}
+
 const REVENUECAT_API_KEY =
   process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || 'appl_rRUSKXTjZaorfXDoAVNBtLrEXvp';
 
@@ -59,9 +81,20 @@ function resolveOfferingWithPackages(offerings: PurchasesOfferings | null): Purc
 
 let purchasesModule: typeof import('react-native-purchases') | null = null;
 
+function isExpoGo(): boolean {
+  return Constants.appOwnership === 'expo';
+}
+
+/** Expo Go ve web’de native IAP yok; SDK yüklenirse configure edilmeden singleton hatası verir. */
+function canUseNativePurchases(): boolean {
+  if (Platform.OS === 'web') return false;
+  if (isExpoGo()) return false;
+  return true;
+}
+
 async function getPurchasesModule() {
+  if (!canUseNativePurchases()) return null;
   if (purchasesModule) return purchasesModule;
-  if (Platform.OS === 'web') return null;
 
   try {
     purchasesModule = await import('react-native-purchases');
@@ -72,12 +105,13 @@ async function getPurchasesModule() {
   }
 }
 
-function isExpoGo(): boolean {
-  return Constants.appOwnership === 'expo';
-}
-
 export async function initializeRevenueCat(): Promise<void> {
-  if (Platform.OS === 'web' || isExpoGo()) {
+  if (!canUseNativePurchases()) {
+    subWarn(
+      isExpoGo()
+        ? 'Expo Go: Abonelik çalışmaz (StoreKit yok). Test için: npx eas-cli build --profile development --platform ios sonra o IPA ile bağlan.'
+        : 'Web: IAP yok.',
+    );
     return;
   }
 
@@ -89,21 +123,39 @@ export async function initializeRevenueCat(): Promise<void> {
       apiKey: REVENUECAT_API_KEY,
     });
 
-    console.log('✅ RevenueCat başlatıldı');
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      await Purchases.default.setLogLevel(Purchases.default.LOG_LEVEL.DEBUG);
+      subLog('RevenueCat SDK LOG_LEVEL.DEBUG (sadece __DEV__)');
+    }
+
+    subLog('RevenueCat configure tamam', { apiKeyPrefix: REVENUECAT_API_KEY.slice(0, 8) + '…' });
   } catch (error) {
-    console.warn('❌ RevenueCat initialize hatası:', error);
+    subWarn('configure hatası:', error);
   }
 }
 
 export async function getCurrentOffering() {
   const Purchases = await getPurchasesModule();
-  if (!Purchases) return null;
+  if (!Purchases) {
+    subLog('getCurrentOffering: SDK yok (Expo Go/web) → null');
+    return null;
+  }
 
   try {
     const offerings = await Purchases.default.getOfferings();
-    return resolveOfferingWithPackages(offerings);
+    const resolved = resolveOfferingWithPackages(offerings);
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      subLog('getOfferings', {
+        currentId: offerings.current?.identifier ?? null,
+        currentPackageCount: offerings.current?.availablePackages?.length ?? 0,
+        allKeys: Object.keys(offerings.all ?? {}),
+        resolvedOfferingId: resolved?.identifier ?? null,
+        resolvedPackageCount: resolved?.availablePackages?.length ?? 0,
+      });
+    }
+    return resolved;
   } catch (error) {
-    console.warn('❌ Offering alınamadı:', error);
+    logPurchaseError(error);
     return null;
   }
 }
@@ -116,14 +168,24 @@ export async function fetchPaywallStorePrices(
   localeTag: string
 ): Promise<PaywallPriceDisplay | null> {
   const offering = await getCurrentOffering();
-  if (!offering) return null;
+  if (!offering) {
+    subLog('fetchPaywallStorePrices: offering null → fallback fiyatlar');
+    return null;
+  }
 
   const pick = (plan: RevenueCatPlan) => findOfferingPackage(offering.availablePackages, plan);
 
   const mPkg = pick('monthly');
   const qPkg = pick('quarterly');
   const aPkg = pick('annual');
-  if (!mPkg?.product || !qPkg?.product || !aPkg?.product) return null;
+  if (!mPkg?.product || !qPkg?.product || !aPkg?.product) {
+    subWarn('fetchPaywallStorePrices: üç paketten biri eksik', {
+      monthly: !!mPkg?.product,
+      quarterly: !!qPkg?.product,
+      annual: !!aPkg?.product,
+    });
+    return null;
+  }
 
   const mp = mPkg.product;
   const qp = qPkg.product;
@@ -157,9 +219,16 @@ export async function getCustomerInfo() {
   if (!Purchases) return null;
 
   try {
-    return await Purchases.default.getCustomerInfo();
+    const info = await Purchases.default.getCustomerInfo();
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      subLog('getCustomerInfo', {
+        activeEntitlements: Object.keys(info.entitlements.active),
+        activeSubscriptions: info.activeSubscriptions,
+      });
+    }
+    return info;
   } catch (error) {
-    console.warn('❌ Customer info alınamadı:', error);
+    logPurchaseError(error);
     return null;
   }
 }
@@ -175,59 +244,70 @@ export async function checkPremiumStatus(): Promise<boolean> {
 export type PurchasePlanResult = 'success' | 'cancelled' | 'failed';
 
 export async function purchasePlan(plan: RevenueCatPlan): Promise<PurchasePlanResult> {
+  subLog('purchasePlan → başladı', { plan, expoGo: isExpoGo(), nativeIap: canUseNativePurchases() });
+
   const Purchases = await getPurchasesModule();
-  if (!Purchases) return 'failed';
+  if (!Purchases) {
+    subWarn('purchasePlan → SDK yok: Expo Go veya web kullanıyorsun; gerçek satın alma olmaz.');
+    return 'failed';
+  }
 
   try {
     const offerings = await Purchases.default.getOfferings();
     const currentOffering = resolveOfferingWithPackages(offerings);
 
     if (!currentOffering) {
-      console.warn('❌ RevenueCat’te paket içeren offering yok (current ve all boş).');
+      subWarn('purchasePlan → offering yok', {
+        currentId: offerings.current?.identifier,
+        allKeys: Object.keys(offerings.all ?? {}),
+      });
       return 'failed';
     }
 
     const selectedPackage = findOfferingPackage(currentOffering.availablePackages, plan);
 
     if (!selectedPackage) {
-      console.warn(
-        `❌ Paket bulunamadı: ${plan} (RC: ${PACKAGE_IDS[plan]}, Store: ${APP_STORE_PRODUCT_IDS[plan]})`
-      );
-      console.log(
-        'Mevcut paketler:',
-        currentOffering.availablePackages.map((p) => ({
-          identifier: p.identifier,
+      subWarn('purchasePlan → paket eşleşmedi', {
+        plan,
+        arananRc: PACKAGE_IDS[plan],
+        arananStore: APP_STORE_PRODUCT_IDS[plan],
+        offeringId: currentOffering.identifier,
+        paketler: currentOffering.availablePackages.map((p) => ({
+          id: p.identifier,
           productId: p.product.identifier,
-          price: p.product.priceString,
-        }))
-      );
+        })),
+      });
       return 'failed';
     }
+
+    subLog('purchasePackage çağrılıyor', {
+      packageId: selectedPackage.identifier,
+      productId: selectedPackage.product.identifier,
+      price: selectedPackage.product.priceString,
+    });
 
     const purchaseResult = await Purchases.default.purchasePackage(selectedPackage);
 
     const isPremium = hasPremiumEntitlement(purchaseResult.customerInfo);
 
     if (isPremium) {
-      console.log(`✅ Satın alma başarılı: ${plan}`);
+      subLog('purchasePlan → başarılı', { plan });
       return 'success';
     }
 
     const activeEntitlements = purchaseResult.customerInfo.entitlements.active;
-    console.warn(
-      'Satın alma tamamlandı ama premium entitlement görünmüyor. RevenueCat’te ürün bu entitlement’a bağlı mı? Beklenen:',
-      PREMIUM_ENTITLEMENT_IDS.join(' veya '),
-      'Aktif anahtarlar:',
-      Object.keys(activeEntitlements),
-    );
+    subWarn('purchasePlan → satın alındı ama entitlement yok', {
+      beklenen: PREMIUM_ENTITLEMENT_IDS,
+      aktif: Object.keys(activeEntitlements),
+    });
     return 'failed';
   } catch (error: any) {
     if (error?.userCancelled) {
-      console.log('ℹ️ Kullanıcı satın almayı iptal etti');
+      subLog('purchasePlan → kullanıcı iptal');
       return 'cancelled';
     }
 
-    console.warn('❌ Satın alma hatası:', error);
+    logPurchaseError(error);
     return 'failed';
   }
 }
@@ -248,7 +328,7 @@ export async function restorePurchases(): Promise<boolean> {
 
     return isPremium;
   } catch (error) {
-    console.warn('❌ Restore purchases hatası:', error);
+    logPurchaseError(error);
     return false;
   }
 }

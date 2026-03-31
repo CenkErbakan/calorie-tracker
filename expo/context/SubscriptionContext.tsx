@@ -180,6 +180,7 @@ export const [SubscriptionProvider, useSubscription] =
 
     const upgradeToPremium = useCallback(
       async (plan: SubscriptionPlan): Promise<PurchasePlanResult> => {
+        console.log('[NutriLens/Sub] upgradeToPremium tıklandı', { plan });
         try {
           let rcPlan: RevenueCatPlan;
 
@@ -198,6 +199,7 @@ export const [SubscriptionProvider, useSubscription] =
           }
 
           const result = await purchasePlan(rcPlan);
+          console.log('[NutriLens/Sub] upgradeToPremium sonuç', { plan, result });
 
           if (result === 'success') {
             const premiumSub: Subscription = {
