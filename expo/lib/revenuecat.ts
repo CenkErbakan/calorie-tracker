@@ -11,7 +11,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-const REVENUECAT_API_KEY = 'test_AaMuNXRFDfRmHkcdZZeIohCUftc';
+const REVENUECAT_API_KEY = 'appl_rRUSKXTjZaorfXDoAVNBtLrEXvp';
 const ENTITLEMENT_ID = 'premium';
 
 // RevenueCat package identifier'ları - Dashboard'daki product ID'lerle eşleşmeli
