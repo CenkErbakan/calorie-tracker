@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import type { PurchasesOfferings, PurchasesOffering } from 'react-native-purchases';
 import { formatStoreMoney, type PaywallPriceDisplay } from '@/lib/paywallPricing';
+import { appendOnDeviceLog } from '@/lib/onDeviceLog';
 
 export type RevenueCatPlan = 'monthly' | 'quarterly' | 'annual';
 
@@ -10,10 +11,12 @@ const SUB = '[NutriLens/Sub]';
 
 function subLog(...args: unknown[]) {
   console.log(SUB, ...args);
+  appendOnDeviceLog('IAP', ...args);
 }
 
 function subWarn(...args: unknown[]) {
   console.warn(SUB, ...args);
+  appendOnDeviceLog('IAP⚠️', ...args);
 }
 
 function logPurchaseError(err: unknown) {

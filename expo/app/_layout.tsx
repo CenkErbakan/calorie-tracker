@@ -13,6 +13,7 @@ import { DietProvider } from '@/context/DietContext';
 import { WaterProvider } from '@/context/WaterContext';
 import { StepsProvider } from '@/context/StepsContext';
 import { Colors } from '@/constants/theme';
+import { OnDeviceLogOverlay } from '@/components/OnDeviceLogOverlay';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,6 +58,7 @@ export default function RootLayout() {
           </SubscriptionProvider>
         </UserProvider>
       </QueryClientProvider>
+      <OnDeviceLogOverlay />
     </SafeAreaProvider>
   );
 }

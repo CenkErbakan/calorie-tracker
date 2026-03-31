@@ -12,6 +12,7 @@
 
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { appendOnDeviceLog } from '@/lib/onDeviceLog';
 
 /** Expo Go'da native AdMob modülü yok - hiç deneme */
 function isExpoGo(): boolean {
@@ -102,46 +103,35 @@ const BANNER_AD_UNIT_ID = __DEV__
 
 export { BANNER_AD_UNIT_ID };
 
-/**
- * Initialize Mobile Ads SDK. Call once at app startup.
- * Expo Go'da sessizce atlanır (native modül yok).
- */
-export async function initializeAds(): Promise<void> {
-  const mod = await getAdsModule();
-  if (!mod) return;
-  try {
-    const mobileAdsFn = mod.default ?? mod.MobileAds;
-    if (typeof mobileAdsFn === 'function') {
-      const instance = mobileAdsFn();
-      if (instance?.initialize) {
-        await instance.initialize();
-      }
-    }
-  } catch {
-    // Expo Go veya native build yok - sessizce devam et
-  }
+/** AdMob “envanter yok” — tekrar denemek bazen işe yarar; politika için en fazla 1 ek deneme. */
+function isNoFillPayload(payload: unknown): boolean {
+  if (!payload || typeof payload !== 'object') return false;
+  const p = payload as Record<string, unknown>;
+  const code = String(p.code ?? '');
+  const message = String(p.message ?? '');
+  return (
+    code.includes('no-fill') ||
+    message.includes('no-fill') ||
+    message.includes('No ad to show')
+  );
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 /**
- * Show a rewarded ad and return a promise that resolves when user earns the reward.
- * Resolves to true if reward earned, false if ad closed early, failed to load, or error.
- * Falls back to simulated ad (5s wait) when native ads unavailable (Expo Go, web).
+ * Tek yükleme/gösterim döngüsü. no-fill ayrı işaretlenir (yeniden deneme için).
  */
-export async function showRewardedAd(): Promise<boolean> {
-  const mod = await getAdsModule();
-  if (!mod || !mod.TestIds?.REWARDED || !mod.RewardedAd) {
-    // Fallback: simulate ad for Expo Go / web
-    await new Promise((r) => setTimeout(r, 5000));
-    return true;
-  }
-
-  const adUnitId = REWARDED_AD_UNIT_ID ?? mod.TestIds.REWARDED;
-
+function runRewardedOnce(
+  mod: NonNullable<Awaited<ReturnType<typeof getAdsModule>>>,
+  adUnitId: string
+): Promise<{ reward: boolean; noFill: boolean }> {
   return new Promise((resolve) => {
     let resolved = false;
     let rewardEarned = false;
     const unsubs: (() => void)[] = [];
-    const finish = (result: boolean) => {
+    const finish = (result: { reward: boolean; noFill: boolean }) => {
       if (!resolved) {
         resolved = true;
         unsubs.forEach((u) => u());
@@ -162,7 +152,8 @@ export async function showRewardedAd(): Promise<boolean> {
           void rewarded.show();
         } catch (e) {
           console.warn('Rewarded ad show() hatası:', e);
-          finish(false);
+          appendOnDeviceLog('AdMob⚠️', 'show() hata:', e);
+          finish({ reward: false, noFill: false });
         }
       };
 
@@ -171,18 +162,30 @@ export async function showRewardedAd(): Promise<boolean> {
           switch (type) {
             case mod.RewardedAdEventType.LOADED:
             case mod.AdEventType.LOADED:
+              appendOnDeviceLog('AdMob', 'Rewarded LOADED → show');
               tryShow();
               break;
             case mod.RewardedAdEventType.EARNED_REWARD:
               rewardEarned = true;
+              appendOnDeviceLog('AdMob', 'EARNED_REWARD');
               break;
             case mod.AdEventType.CLOSED:
-              finish(rewardEarned);
+              appendOnDeviceLog('AdMob', 'CLOSED ödül:', rewardEarned);
+              finish({ reward: rewardEarned, noFill: false });
               break;
-            case mod.AdEventType.ERROR:
+            case mod.AdEventType.ERROR: {
               console.warn('Rewarded ad error:', payload);
-              finish(false);
+              const noFill = isNoFillPayload(payload);
+              appendOnDeviceLog(
+                'AdMob⚠️',
+                noFill
+                  ? 'no-fill (envanter yok — bölge/trafik/yeni birim normal)'
+                  : 'ERROR',
+                payload
+              );
+              finish({ reward: false, noFill });
               break;
+            }
             default:
               break;
           }
@@ -191,11 +194,64 @@ export async function showRewardedAd(): Promise<boolean> {
 
       rewarded.load();
 
-      const timeout = setTimeout(() => finish(rewardEarned), 45000);
+      const timeout = setTimeout(() => finish({ reward: rewardEarned, noFill: false }), 45000);
       unsubs.push(() => clearTimeout(timeout));
     } catch (error) {
       console.warn('Rewarded ad failed:', error);
-      finish(false);
+      appendOnDeviceLog('AdMob⚠️', 'Rewarded oluşturma/load hata:', error);
+      finish({ reward: false, noFill: false });
     }
   });
+}
+
+/**
+ * Initialize Mobile Ads SDK. Call once at app startup.
+ * Expo Go'da sessizce atlanır (native modül yok).
+ */
+export async function initializeAds(): Promise<void> {
+  const mod = await getAdsModule();
+  if (!mod) {
+    appendOnDeviceLog('AdMob', 'SDK atlandı (Expo Go/web veya modül yok)');
+    return;
+  }
+  try {
+    const mobileAdsFn = mod.default ?? mod.MobileAds;
+    if (typeof mobileAdsFn === 'function') {
+      const instance = mobileAdsFn();
+      if (instance?.initialize) {
+        await instance.initialize();
+      }
+    }
+    appendOnDeviceLog('AdMob', 'Mobile Ads SDK initialize tamam');
+  } catch (e) {
+    appendOnDeviceLog('AdMob⚠️', 'initialize hata:', e);
+  }
+}
+
+/**
+ * Show a rewarded ad and return a promise that resolves when user earns the reward.
+ * Resolves to true if reward earned, false if ad closed early, failed to load, or error.
+ * Falls back to simulated ad (5s wait) when native ads unavailable (Expo Go, web).
+ */
+export async function showRewardedAd(): Promise<boolean> {
+  const mod = await getAdsModule();
+  if (!mod || !mod.TestIds?.REWARDED || !mod.RewardedAd) {
+    appendOnDeviceLog('AdMob', 'Simüle ödüllü reklam (5s) – native yok');
+    await new Promise((r) => setTimeout(r, 5000));
+    return true;
+  }
+
+  const adUnitId = REWARDED_AD_UNIT_ID ?? mod.TestIds.REWARDED;
+  appendOnDeviceLog('AdMob', 'showRewardedAd load', { adUnitId });
+
+  let out = await runRewardedOnce(mod, adUnitId);
+  if (out.reward) return true;
+
+  if (out.noFill) {
+    appendOnDeviceLog('AdMob', 'no-fill → 2s sonra 1 kez yeniden deneniyor');
+    await delay(2000);
+    out = await runRewardedOnce(mod, adUnitId);
+  }
+
+  return out.reward;
 }
