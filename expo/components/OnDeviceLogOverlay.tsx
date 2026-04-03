@@ -16,7 +16,7 @@ import {
 } from '@/lib/onDeviceLog';
 import { Colors, Spacing } from '@/constants/theme';
 
-/** IAP / RevenueCat debug — TestFlight’ta EXPO_PUBLIC_SHOW_DEVICE_LOGS=1 gerekir. */
+/** IAP / RevenueCat debug — yalnızca EXPO_PUBLIC_SHOW_DEVICE_LOGS=1 iken görünür. */
 export function OnDeviceLogOverlay() {
   const insets = useSafeAreaInsets();
   const [logLines, setLogLines] = useState<string[]>([]);

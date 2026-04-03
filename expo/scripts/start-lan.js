@@ -25,9 +25,12 @@ if (lanIp) {
   console.log('Using LAN IP:', lanIp, '(exp://' + lanIp + ':8081)');
 }
 
-const child = spawn('bun', ['x', 'rork', 'start', '-p', 'tha7reg68ka2lobf1vtb9', '--lan'], {
+const expoRoot = path.join(__dirname, '..');
+// rork/bunx bazen bozuk cache ile MODULE_NOT_FOUND veriyor; resmi Expo CLI + LAN.
+const child = spawn('npx', ['expo', 'start', '--lan'], {
   stdio: 'inherit',
   env: process.env,
   shell: true,
+  cwd: expoRoot,
 });
 child.on('exit', (code) => process.exit(code ?? 0));

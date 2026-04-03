@@ -11,11 +11,13 @@ import {
 import { getTodayKey } from '@/types';
 import { useUser } from '@/context/UserContext';
 import { showRewardedAd } from '@/lib/ads';
+import { Linking, Platform } from 'react-native';
 import {
   checkPremiumStatus,
   purchasePlan,
   restorePurchases as rcRestorePurchases,
   getCustomerInfo,
+  getPremiumExpirationMillis,
   type RevenueCatPlan,
   type PurchasePlanResult,
 } from '@/lib/revenuecat';
@@ -121,7 +123,7 @@ export const [SubscriptionProvider, useSubscription] =
           setSubscription({
             tier: 'premium',
             plan: resolvedPlan,
-            expiryDate: null,
+            expiryDate: getPremiumExpirationMillis(customerInfo),
             isTrial: false,
             trialEndDate: null,
           });
@@ -205,10 +207,11 @@ export const [SubscriptionProvider, useSubscription] =
           appendOnDeviceLog('Sub', 'upgradeToPremium sonuç', { plan, result });
 
           if (result === 'success') {
+            const freshInfo = await getCustomerInfo();
             const premiumSub: Subscription = {
               tier: 'premium',
               plan,
-              expiryDate: null,
+              expiryDate: getPremiumExpirationMillis(freshInfo),
               isTrial: false,
               trialEndDate: null,
             };
@@ -306,7 +309,7 @@ export const [SubscriptionProvider, useSubscription] =
           const restoredSub: Subscription = {
             tier: 'premium',
             plan: resolvedPlan,
-            expiryDate: null,
+            expiryDate: getPremiumExpirationMillis(customerInfo),
             isTrial: false,
             trialEndDate: null,
           };
@@ -323,10 +326,19 @@ export const [SubscriptionProvider, useSubscription] =
       }
     }, [saveSubscription]);
 
+    /** Apple/Google modeli: iptal = yenilemeyi durdur; erişim ödenen dönem sonuna kadar sürer. Yerel state silinmez. */
     const cancelSubscription = useCallback(async () => {
-      setSubscription(DEFAULT_SUBSCRIPTION);
-      await saveSubscription(DEFAULT_SUBSCRIPTION);
-    }, [saveSubscription]);
+      const url =
+        Platform.OS === 'ios'
+          ? 'https://apps.apple.com/account/subscriptions'
+          : Platform.OS === 'android'
+            ? 'https://play.google.com/store/account/subscriptions'
+            : null;
+      if (url) {
+        await Linking.openURL(url);
+        appendOnDeviceLog('Sub', 'Abonelik yönetimi (mağaza) açıldı');
+      }
+    }, []);
 
     const isPremium = useMemo(() => {
       return subscription.tier === 'premium';

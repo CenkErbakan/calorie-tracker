@@ -17,11 +17,12 @@ import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/
 import { Crown, Check, RefreshCw, Settings2, ArrowRight, ChevronLeft } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { formatDate } from '@/lib/dateUtils';
+import { getPrivacyPolicyUrl, getTermsOfUseUrl } from '@/lib/legalUrls';
 
 function getManageSubscriptionUrl() {
   if (Platform.OS === 'ios') return 'https://apps.apple.com/account/subscriptions';
   if (Platform.OS === 'android') return 'https://play.google.com/store/account/subscriptions';
-  return 'https://example.com/subscription';
+  return 'https://apps.apple.com/account/subscriptions';
 }
 
 export default function SubscriptionScreen() {
@@ -71,11 +72,10 @@ export default function SubscriptionScreen() {
 
   const handleCancel = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert(t('subscription'), t('cancelSubscriptionConfirm'), [
+    Alert.alert(t('cancelSubscriptionInfoTitle'), t('cancelSubscriptionInfoMessage'), [
       { text: t('back'), style: 'cancel' },
       {
-        text: t('cancelSubscription'),
-        style: 'destructive',
+        text: t('openStoreSubscriptions'),
         onPress: () => {
           void cancelSubscription();
         },
@@ -183,6 +183,28 @@ export default function SubscriptionScreen() {
             <View style={styles.rowText}>
               <Text style={styles.rowTitle}>{t('manageSubscription')}</Text>
               <Text style={styles.rowSubtitle}>{t('manageSubscriptionHint')}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('legalDocuments')}</Text>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => void Linking.openURL(getPrivacyPolicyUrl())}
+            activeOpacity={0.85}
+          >
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>{t('privacyPolicy')}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => void Linking.openURL(getTermsOfUseUrl())}
+            activeOpacity={0.85}
+          >
+            <View style={styles.rowText}>
+              <Text style={styles.rowTitle}>{t('termsOfUseEULA')}</Text>
             </View>
           </TouchableOpacity>
         </View>

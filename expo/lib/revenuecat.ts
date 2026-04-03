@@ -87,6 +87,9 @@ const APP_STORE_PRODUCT_IDS: Record<RevenueCatPlan, string> = {
 let purchasesModule: typeof import('react-native-purchases') | null = null;
 let isRevenueCatConfigured = false;
 
+/** _layout’taki void initialize ile paywall / context yarışmasın: tüm SDK çağrıları bunu await eder. */
+let revenueCatInitPromise: Promise<void> | null = null;
+
 function isExpoGo(): boolean {
   return Constants.appOwnership === 'expo';
 }
@@ -117,6 +120,39 @@ function hasPremiumEntitlement(
   }
 
   return matched;
+}
+
+/**
+ * Aktif premium entitlement veya latestExpirationDate üzerinden bitiş (ms).
+ * Apple’da “iptal” sonrası da erişim bu tarihe kadar sürebilir.
+ */
+export function getPremiumExpirationMillis(
+  customerInfo: {
+    entitlements: { active: Record<string, { expirationDate?: string | null } | undefined> };
+    latestExpirationDate?: string | null;
+  } | null
+): number | null {
+  if (!customerInfo) return null;
+
+  let best: number | null = null;
+  const active = customerInfo.entitlements.active ?? {};
+
+  for (const id of PREMIUM_ENTITLEMENT_IDS) {
+    const ent = active[id];
+    const raw = ent?.expirationDate;
+    if (raw) {
+      const ms = new Date(raw).getTime();
+      if (!Number.isNaN(ms) && (best === null || ms > best)) best = ms;
+    }
+  }
+
+  const latest = customerInfo.latestExpirationDate;
+  if (latest) {
+    const ms = new Date(latest).getTime();
+    if (!Number.isNaN(ms) && (best === null || ms > best)) best = ms;
+  }
+
+  return best;
 }
 
 function findOfferingPackage<T extends { identifier: string; product: { identifier: string } }>(
@@ -240,6 +276,13 @@ async function logRestOfferingsExpoGoOnce(): Promise<void> {
 }
 
 export async function initializeRevenueCat(): Promise<void> {
+  if (!revenueCatInitPromise) {
+    revenueCatInitPromise = runRevenueCatInitialization();
+  }
+  return revenueCatInitPromise;
+}
+
+async function runRevenueCatInitialization(): Promise<void> {
   if (Platform.OS === 'web') {
     subLog('Web: IAP yok');
     return;
@@ -310,9 +353,12 @@ export async function initializeRevenueCat(): Promise<void> {
         apiKeyPrefix: REVENUECAT_API_KEY.slice(0, 8) + '…',
         iosBundleId: Constants.expoConfig?.ios?.bundleIdentifier ?? '(expoConfig yok)',
         executionEnvironment: Constants.executionEnvironment,
-        iapKod23Ipucu:
-          'Ürün yoksa: fiziksel iPhone + sandbox; simülatörde ASC ürünleri genelde gelmez. Xcode scheme’de StoreKit Configuration kapalı olsun. RevenueCat → App → iOS bundle com.cesk.nutrilens ile aynı mı kontrol et.',
       });
+      if (__DEV__) {
+        subLog(
+          'IAP (DEV bilgi): offerings boş / kod 23 → rev.cat/why-are-offerings-empty; fiziksel cihaz + sandbox; RC iOS bundle = app bundle.'
+        );
+      }
     }
 
     if (__DEV__) {
@@ -325,6 +371,7 @@ export async function initializeRevenueCat(): Promise<void> {
 }
 
 export async function getCurrentOffering() {
+  await initializeRevenueCat();
   if (!canUsePurchasesSdk()) return null;
   if (!isRevenueCatConfigured) return null;
 
@@ -419,6 +466,7 @@ export async function fetchPaywallStorePrices(
 }
 
 export async function getCustomerInfo() {
+  await initializeRevenueCat();
   if (!canUsePurchasesSdk()) return null;
   if (!isRevenueCatConfigured) return null;
 
@@ -453,6 +501,8 @@ export async function checkPremiumStatus(): Promise<boolean> {
 export type PurchasePlanResult = 'success' | 'cancelled' | 'failed';
 
 export async function purchasePlan(plan: RevenueCatPlan): Promise<PurchasePlanResult> {
+  await initializeRevenueCat();
+
   subLog('purchasePlan başladı', {
     plan,
     expoGo: isExpoGo(),
@@ -544,6 +594,7 @@ export async function purchasePlan(plan: RevenueCatPlan): Promise<PurchasePlanRe
 }
 
 export async function restorePurchases(): Promise<boolean> {
+  await initializeRevenueCat();
   if (!canUsePurchasesSdk() || !isRevenueCatConfigured) return false;
 
   const Purchases = await getPurchasesModule();

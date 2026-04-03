@@ -188,6 +188,10 @@ const trTranslations = {
   appVersion: 'Uygulama Sürümü',
   privacyPolicy: 'Gizlilik Politikası',
   termsOfService: 'Kullanım Koşulları',
+  termsOfUseEULA: 'Kullanım Şartları (EULA)',
+  paywallSubscriptionNotice:
+    'NutriLens Premium otomatik yenilenen bir aboneliktir. Süre ve güncel fiyat yukarıda gösterilir. İstediğiniz zaman App Store → Hesap → Abonelikler üzerinden iptal edebilirsiniz. Aşağıdaki bağlantılardan Gizlilik Politikası ve Kullanım Şartlarına (Apple standart EULA) ulaşabilirsiniz.',
+  legalDocuments: 'Yasal',
 
   // Paywall
   premiumTitle: 'NutriLens Premium',
@@ -225,6 +229,10 @@ const trTranslations = {
   manageSubscriptionHint: 'Mağaza abonelik ayarlarını aç',
   cancelSubscription: 'Aboneliği iptal et',
   cancelSubscriptionConfirm: 'Aboneliğinizi iptal etmek istediğinize emin misiniz?',
+  cancelSubscriptionInfoTitle: 'Otomatik yenilemeyi kapat',
+  cancelSubscriptionInfoMessage:
+    'Uygulama içinden aboneliği “silmezsiniz”; Apple veya Google abonelik sayfasından yenilemeyi kapatırsınız. Ödediğiniz dönem sonuna kadar Premium erişiminiz devam eder. Devam etmek için mağaza abonelik ayarlarını açıyoruz.',
+  openStoreSubscriptions: 'Mağaza aboneliklerini aç',
   changePlan: 'Planı Değiştir',
   restoreNotFound: 'Geri yüklenecek satın alım bulunamadı',
   purchaseFailed:
@@ -511,6 +519,10 @@ const enTranslations = {
   appVersion: 'App Version',
   privacyPolicy: 'Privacy Policy',
   termsOfService: 'Terms of Service',
+  termsOfUseEULA: 'Terms of Use (EULA)',
+  paywallSubscriptionNotice:
+    'NutriLens Premium is an auto-renewing subscription. The term and current price are shown above. Cancel anytime in App Store → Account → Subscriptions. Use the links below for the Privacy Policy and Terms of Use (Apple’s standard EULA).',
+  legalDocuments: 'Legal',
 
   // Paywall
   premiumTitle: 'NutriLens Premium',
@@ -548,6 +560,10 @@ const enTranslations = {
   manageSubscriptionHint: 'Open store subscription settings',
   cancelSubscription: 'Cancel Subscription',
   cancelSubscriptionConfirm: 'Are you sure you want to cancel your subscription?',
+  cancelSubscriptionInfoTitle: 'Turn off auto-renewal',
+  cancelSubscriptionInfoMessage:
+    'You don’t cancel through the app alone — turn off renewal in your Apple or Google subscription settings. You keep Premium access until the end of the period you already paid for. We’ll open your store subscriptions page.',
+  openStoreSubscriptions: 'Open store subscriptions',
   changePlan: 'Change Plan',
   restoreNotFound: 'No purchases to restore found',
   purchaseFailed:

@@ -33,6 +33,7 @@ import {
   Clock,
 } from 'lucide-react-native';
 import { ActivityIndicator } from 'react-native';
+import { getPrivacyPolicyUrl, getTermsOfUseUrl } from '@/lib/legalUrls';
 
 export default function PaywallScreen() {
   const { t, language } = useTranslation();
@@ -254,26 +255,20 @@ export default function PaywallScreen() {
           </TouchableOpacity>
           <Text style={styles.ctaSubtext}>{t('cancelAnytime')}</Text>
 
-          {/* Satın alımları geri yükle, Gizlilik, Koşullar */}
+          <Text style={styles.subscriptionNotice}>{t('paywallSubscriptionNotice')}</Text>
+
+          {/* Satın alımları geri yükle, Gizlilik, EULA */}
           <View style={styles.footer}>
             <TouchableOpacity onPress={handleRestore}>
               <Text style={styles.footerLink}>{t('restorePurchases')}</Text>
             </TouchableOpacity>
             <View style={styles.footerDivider} />
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL('https://example.com/privacy')
-              }
-            >
+            <TouchableOpacity onPress={() => void Linking.openURL(getPrivacyPolicyUrl())}>
               <Text style={styles.footerLink}>{t('privacyPolicy')}</Text>
             </TouchableOpacity>
             <View style={styles.footerDivider} />
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL('https://example.com/terms')
-              }
-            >
-              <Text style={styles.footerLink}>{t('termsOfService')}</Text>
+            <TouchableOpacity onPress={() => void Linking.openURL(getTermsOfUseUrl())}>
+              <Text style={styles.footerLink}>{t('termsOfUseEULA')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -453,7 +448,15 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textSecondary,
     textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  subscriptionNotice: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
     marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.sm,
   },
   footer: {
     flexDirection: 'row',

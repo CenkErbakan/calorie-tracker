@@ -15,9 +15,9 @@
       "backgroundColor": "#0A0F1E"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.cesk.nutrilens",
-      "buildNumber": "1",
+      "buildNumber": "22",
       "infoPlist": {
         "NSCameraUsageDescription": "Kamera, barkod tarama ve yemek fotoğrafı çekerek analiz yapabilmeniz için kullanılır.",
         "NSPhotoLibraryUsageDescription": "Yemek fotoğraflarını seçip analiz edebilmeniz için fotoğraf arşivinize erişim gereklidir.",
@@ -29,6 +29,12 @@
       "expo-font",
       "expo-web-browser",
       "expo-localization",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "NutriLens uses Motion & Fitness data from your device to read your daily step count, show it on the home screen, and estimate calories burned from walking—for example, displaying “8,240 steps today” with an approximate kcal value next to your nutrition tracking."
+        }
+      ],
       [
         "expo-camera",
         {
@@ -49,8 +55,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d740ebec-662a-4130-8b1c-c3b1f553dbdb"
+        "projectId": "283eb42b-0add-41e3-81c4-82329a589df9"
       }
-    }
+    },
+    "owner": "cenk35"
   }
 }

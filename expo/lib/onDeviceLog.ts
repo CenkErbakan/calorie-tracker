@@ -1,6 +1,6 @@
 /**
- * TestFlight / release: EXPO_PUBLIC_SHOW_DEVICE_LOGS=1 (eas.json production env).
- * Geliştirme: __DEV__ açıkken her zaman.
+ * Varsayılan kapalı — UI’da log paneli görünmez, appendOnDeviceLog no-op.
+ * Test / TestFlight için: .env veya EAS env ile EXPO_PUBLIC_SHOW_DEVICE_LOGS=1
  */
 
 const MAX_LINES = 120;
@@ -9,9 +9,7 @@ let lines: string[] = [];
 const listeners = new Set<(next: string[]) => void>();
 
 export function isOnDeviceLogEnabled(): boolean {
-  if (typeof __DEV__ !== 'undefined' && __DEV__) return true;
-  if (process.env.EXPO_PUBLIC_SHOW_DEVICE_LOGS === '1') return true;
-  return false;
+  return process.env.EXPO_PUBLIC_SHOW_DEVICE_LOGS === '1';
 }
 
 function formatArg(v: unknown): string {
