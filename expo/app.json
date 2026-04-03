@@ -17,10 +17,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cesk.nutrilens",
-      "buildNumber": "22",
+      "buildNumber": "23",
       "infoPlist": {
-        "NSCameraUsageDescription": "Kamera, barkod tarama ve yemek fotoğrafı çekerek analiz yapabilmeniz için kullanılır.",
-        "NSPhotoLibraryUsageDescription": "Yemek fotoğraflarını seçip analiz edebilmeniz için fotoğraf arşivinize erişim gereklidir.",
+        "NSCameraUsageDescription": "NutriLens uses the camera to scan barcodes and take photos of your meals for nutrition analysis—for example, to estimate calories and nutrients from a picture of your food.",
+        "NSPhotoLibraryUsageDescription": "NutriLens needs access to your photo library so you can choose meal photos for nutrition analysis—for example, selecting a picture of your food to estimate calories and nutrients.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -38,7 +38,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Kamera, barkod tarama ve yemek fotoğrafı çekerek analiz yapabilmeniz için kullanılır.",
+          "cameraPermission": "NutriLens uses the camera to scan barcodes and take photos of your meals for nutrition analysis—for example, to estimate calories and nutrients from a picture of your food.",
           "barcodeScannerEnabled": true
         }
       ],
